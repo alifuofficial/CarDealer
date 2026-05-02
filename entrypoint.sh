@@ -10,10 +10,11 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 echo "Running database synchronization..."
-prisma db push --accept-data-loss || echo "WARNING: Database sync failed, attempting to start app anyway..."
+prisma db push --accept-data-loss --skip-generate || echo "WARNING: Database sync failed, attempting to start app anyway..."
 
 echo "Seeding initial data..."
-prisma db seed || echo "WARNING: Seeding failed, continuing anyway..."
+# Use node to run the compiled seed.js instead of npx prisma db seed (which uses ts-node)
+node prisma/seed.js || echo "WARNING: Seeding failed, continuing anyway..."
 
 # Start the application
 echo "Starting the application on port ${PORT:-3000}..."

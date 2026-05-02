@@ -25,6 +25,7 @@ RUN npx prisma generate
 # ENV NEXT_TELEMETRY_DISABLED 1
 ENV DATABASE_URL="file:./dev.db"
 RUN npx prisma db push --accept-data-loss
+RUN npx tsc prisma/seed.ts --esModuleInterop --module CommonJS --skipLibCheck
 
 RUN npm run build
 
