@@ -28,9 +28,14 @@ export async function sendSMS(msisdn: string, text: string) {
     formattedNumber = "251" + formattedNumber;
   }
 
+  // Truncate to 160 chars as per documentation
+  const safeText = text.substring(0, 160);
+
   try {
-    console.log(`Sending SMS to ${formattedNumber} via SMSEthiopia.com...`);
-    const response = await fetch("https://smsethiopia.com/api/sms/send", {
+    console.log(`Sending SMS to ${formattedNumber} via SMSEthiopia.et...`);
+    console.log(`Payload: { msisdn: "${formattedNumber}", textLength: ${safeText.length} }`);
+    
+    const response = await fetch("https://smsethiopia.et/api/sms/send", {
       method: "POST",
       headers: {
         "KEY": org.smsApiKey.trim(),
@@ -38,7 +43,7 @@ export async function sendSMS(msisdn: string, text: string) {
       },
       body: JSON.stringify({
         msisdn: formattedNumber,
-        text: text,
+        text: safeText,
       }),
     });
 
