@@ -76,7 +76,7 @@ export async function GET(
     
     contentType = mimeTypes[ext] || contentType;
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(fileBuffer as any, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
