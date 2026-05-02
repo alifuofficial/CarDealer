@@ -55,6 +55,13 @@ export async function resetSystemData() {
         smtpFromEmail: "",
         smtpFromName: "",
         defaultExpiryDays: 15,
+        ftpHost: "",
+        ftpPort: 21,
+        ftpUser: "",
+        ftpPassword: "",
+        ftpRoot: "/",
+        ftpIsSecure: false,
+        isFtpEnabled: false,
       }
     });
 

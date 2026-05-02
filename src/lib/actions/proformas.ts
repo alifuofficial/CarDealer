@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendSMS, replaceSmsVariables } from "@/lib/sms";
 import { format } from "date-fns";
+import { uploadFile } from "@/lib/storage";
 
 export async function createProforma(formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -171,9 +172,6 @@ export async function deleteProforma(id: string) {
   return { success: true };
 }
 
-import path from "path";
-import { writeFile, mkdir } from "fs/promises";
-
 export async function submitPayment(id: string, formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session) throw new Error("Unauthorized");
@@ -190,14 +188,7 @@ export async function submitPayment(id: string, formData: FormData) {
   let receiptUrl = "UPLOADED_RECEIPT_PLACEHOLDER";
   
   if (receiptFile && receiptFile.size > 0) {
-    const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
-    const bytes = await receiptFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `receipt-${id}-${Date.now()}${path.extname(receiptFile.name)}`;
-    await mkdir(UPLOADS_DIR, { recursive: true });
-    const filePath = path.join(UPLOADS_DIR, fileName);
-    await writeFile(filePath, buffer);
-    receiptUrl = `/api/uploads/${fileName}`;
+    receiptUrl = await uploadFile(receiptFile, `receipt-${id}`);
   }
 
   await prisma.$executeRaw`

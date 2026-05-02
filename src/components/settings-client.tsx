@@ -32,9 +32,11 @@ import { createCompanyAccount, deleteCompanyAccount } from "@/lib/actions/accoun
 import { formatByPreference } from "@/lib/ethiopian-calendar";
 import { updateSmsTemplate } from "@/lib/actions/marketing";
 import { testSmtpConnection } from "@/lib/actions/email";
+import { testFtpConnection } from "@/lib/actions/organization";
 import { resetSystemData } from "@/lib/actions/system";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 type SettingsClientProps = {
@@ -71,6 +73,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
     { id: "Security", icon: Lock, label: "Security & Login", adminOnly: false },
     { id: "System", icon: Database, label: "System Config", adminOnly: true },
     { id: "Notifications", icon: Bell, label: "Notifications", adminOnly: true },
+    { id: "Storage", icon: Layout, label: "Remote Storage", adminOnly: true },
   ];
 
   const categories = isRestrictedRole
@@ -727,26 +730,6 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
             </div>
           </div>
         );
-      case "Security":
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Security & Login</h3>
-              <p className="text-sm text-slate-500">Secure your account with multi-factor authentication.</p>
-            </div>
-            <div className="grid gap-3 max-w-xl">
-              {["Two-Factor Authentication", "Change Password", "Login History", "Authorized Devices"].map((item) => (
-                <button key={item} type="button" className="flex items-center justify-between p-4 rounded-xl border bg-white hover:bg-slate-50 transition-all text-sm font-bold text-slate-700">
-                  <div className="flex items-center gap-3">
-                    <Shield className="h-4 w-4 text-slate-400" />
-                    {item}
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-slate-300" />
-                </button>
-              ))}
-            </div>
-          </div>
-        );
       case "System":
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -826,7 +809,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                           defaultChecked={organization?.calendarType === "ETHIOPIAN"}
                           className="sr-only peer"
                         />
-                        <div className="px-3 py-1 text-[10px] font-bold uppercase rounded-md peer-checked:bg-slate-900 peer-checked:text-white transition-all">Ethiopia</div>
+                        <div className="px-3 py-1 text-[10px] font-bold uppercase rounded-md peer-checked:bg-slate-900 peer-checked:text-white transition-all">Ethiopian</div>
                       </label>
                     </div>
                   </div>
@@ -836,7 +819,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               <div className="space-y-4 pt-4 border-t">
                 <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-blue-600" />
-                  Document Lifecycle
+                  Proforma Lifecycle
                 </h4>
                 <div className="p-4 rounded-xl border bg-slate-50 space-y-4">
                   <div className="flex items-center justify-between">
@@ -859,54 +842,30 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
-                <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Calculator className="h-4 w-4 text-blue-600" />
-                  Date Preview
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl border bg-white space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Gregorian</p>
-                    <p className="text-sm font-bold text-slate-700">{formatByPreference(new Date(), "GREGORIAN")}</p>
-                  </div>
-                  <div className="p-4 rounded-xl border bg-blue-50/50 border-blue-100 space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Ethiopia</p>
-                    <p className="text-sm font-bold text-blue-900">{formatByPreference(new Date(), "ETHIOPIAN")}</p>
-                  </div>
-                </div>
-              </div>
-
               <div className="space-y-4 pt-8 border-t">
-                <h4 className="text-sm font-bold text-red-600 flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Danger Zone
-                </h4>
-                <div className="p-6 rounded-2xl border border-red-100 bg-red-50/30 space-y-4">
-                  <div>
-                    <p className="text-sm font-bold text-red-900">Reset System Data</p>
-                    <p className="text-[10px] text-red-600 font-medium leading-relaxed">
-                      This will permanently delete all customers, cars, proformas, logs, and users (except you). 
-                      Organization settings will be reset to defaults. This action cannot be undone.
-                    </p>
+                <div className="flex items-center justify-between p-6 rounded-2xl bg-red-50 border border-red-100">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-red-900 flex items-center gap-2">
+                      <Trash2 className="h-4 w-4" />
+                      Danger Zone: Data Reset
+                    </h4>
+                    <p className="text-xs text-red-600 font-medium">Permanently erase all proformas, customers, and transactions.</p>
                   </div>
                   <Button 
                     type="button"
                     variant="destructive"
-                    className="h-10 px-6 text-[10px] font-black uppercase tracking-widest"
-                    onClick={async () => {
-                      if (confirm("CRITICAL WARNING: This will erase ALL system data. Are you absolutely sure?")) {
+                    onClick={() => {
+                      if (confirm("CRITICAL: This will erase ALL application data. This action CANNOT be undone. Are you absolutely sure?")) {
                         toast.promise(resetSystemData(), {
                           loading: "Wiping system data...",
-                          success: (data) => {
-                            router.push("/dashboard");
-                            return data.message;
-                          },
-                          error: (err) => err.message
+                          success: "System reset successful",
+                          error: "Reset failed"
                         });
                       }
                     }}
+                    className="h-9 px-4 text-[10px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-700"
                   >
-                    Reset System Now
+                    Reset Now
                   </Button>
                 </div>
               </div>
@@ -917,106 +876,182 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Notification Settings</h3>
-              <p className="text-sm text-slate-500">Configure how you and your customers receive updates.</p>
+              <h3 className="text-lg font-bold text-slate-900">Communication & SMS</h3>
+              <p className="text-sm text-slate-500">Manage SMS templates and delivery settings for Ethiopia.</p>
+            </div>
+
+            <div className="grid gap-6">
+              {smsTemplates?.map((template) => (
+                <div key={template.id} className="p-6 rounded-3xl border bg-slate-50/50 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-white border rounded-xl flex items-center justify-center text-slate-400 shadow-sm">
+                        <MessageSquare className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{template.name}</h4>
+                        <p className="text-[10px] text-slate-500 font-medium italic">Sent automatically on {template.trigger}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="bg-white text-[10px] font-black tracking-widest">TEMPLATE ID: {template.id}</Badge>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Message Content</label>
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Available variables: [name], [id], [amount]</span>
+                    </div>
+                    <textarea 
+                      id={`template-${template.id}`}
+                      defaultValue={template.content}
+                      className="w-full h-24 rounded-2xl border bg-white p-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none" 
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      type="button"
+                      variant="ghost"
+                      onClick={async () => {
+                        const content = (document.getElementById(`template-${template.id}`) as HTMLTextAreaElement).value;
+                        const fd = new FormData();
+                        fd.append("id", template.id);
+                        fd.append("content", content);
+                        
+                        toast.promise(updateSmsTemplate(fd), {
+                          loading: 'Saving template...',
+                          success: 'Template updated successfully',
+                          error: 'Failed to update template'
+                        });
+                      }}
+                      className="h-9 px-6 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 hover:bg-white"
+                    >
+                      Update Template
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "Storage":
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Remote Storage (FTP)</h3>
+              <p className="text-sm text-slate-500">Configure external storage for uploads and backups.</p>
             </div>
 
             <div className="grid gap-6 max-w-xl">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border">
-                  <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
-                    <Globe className="h-5 w-5" />
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <Layout className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">SMS Ethiopia Integration</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">Connect to smsethiopia.et for sub-second SMS delivery.</p>
+                    <h4 className="text-sm font-bold text-slate-900">Enable FTP Storage</h4>
+                    <p className="text-[10px] text-slate-500 font-medium italic">When enabled, all new uploads will be sent to your FTP server.</p>
+                  </div>
+                </div>
+                <div className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    name="isFtpEnabled"
+                    type="checkbox" 
+                    defaultChecked={organization?.isFtpEnabled}
+                    className="sr-only peer" 
+                  />
+                  <input type="hidden" name="__has_isFtpEnabled" value="true" />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Host</Label>
+                    <input 
+                      name="ftpHost"
+                      defaultValue={organization?.ftpHost}
+                      placeholder="ftp.example.com"
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Port</Label>
+                    <input 
+                      name="ftpPort"
+                      type="number"
+                      defaultValue={organization?.ftpPort || 21}
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                    />
                   </div>
                 </div>
 
-                <div className="p-6 rounded-2xl border bg-white space-y-6 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm font-bold text-slate-700">Enable SMS Notifications</p>
-                      <p className="text-[10px] text-slate-500 font-medium italic">Sends automatic SMS to customers when proformas are created.</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="hidden" name="__has_isSmsEnabled" value="1" />
-                      <input
-                        type="checkbox"
-                        name="isSmsEnabled"
-                        defaultChecked={organization?.isSmsEnabled}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Username</Label>
+                    <input 
+                      name="ftpUser"
+                      defaultValue={organization?.ftpUser}
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                    />
                   </div>
-
-                  <div className="space-y-2 border-t pt-6">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">API Key (KEY Header)</label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        name="smsApiKey"
-                        defaultValue={organization?.smsApiKey}
-                        className="w-full h-11 rounded-xl border bg-white px-4 pr-12 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-600 transition-all"
-                        placeholder="Enter your SMSEthiopia API Key"
-                      />
-                      <div className="absolute right-4 top-3.5">
-                        <Lock className="h-4 w-4 text-slate-300" />
-                      </div>
-                    </div>
-                    <p className="text-[9px] text-slate-400 flex items-center gap-1.5 mt-2">
-                      <Shield className="h-3 w-3" />
-                      Your key is encrypted and stored securely. Never share it.
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-slate-50 rounded-xl border border-dashed flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-bold text-slate-900 uppercase">Service Status</p>
-                      <p className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
-                        <Check className="h-2 w-2" />
-                        API v3.0 Live
-                      </p>
-                    </div>
-                    <a href="https://smsethiopia.et/console" target="_blank" rel="noreferrer" className="text-[10px] font-bold text-blue-600 hover:underline uppercase tracking-tighter">
-                      Get Key from Console
-                    </a>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Password</Label>
+                    <input 
+                      name="ftpPassword"
+                      type="password"
+                      defaultValue={organization?.ftpPassword}
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                    />
                   </div>
                 </div>
 
-                {/* SMS Templates */}
-                <div className="space-y-4 pt-6 border-t">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Remote Root Directory</Label>
+                  <input 
+                    name="ftpRoot"
+                    defaultValue={organization?.ftpRoot || "/"}
+                    className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-slate-400" />
-                    <h4 className="text-sm font-bold text-slate-900">SMS Templates</h4>
+                    <ShieldCheck className="h-4 w-4 text-slate-400" />
+                    <span className="text-xs font-bold text-slate-700">Use Secure FTP (FTPS)</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-medium">Customize automated messages. Use variables like <span className="text-blue-600 font-bold">[CustomerName]</span>, <span className="text-blue-600 font-bold">[Amount]</span>, etc.</p>
-                  
-                  <div className="space-y-4">
-                    {smsTemplates.map((template: any) => (
-                      <div key={template.id} className="p-4 rounded-2xl border bg-white space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{template.name.replace('_', ' ')}</span>
-                          <Badge variant="outline" className="text-[8px] font-bold">Variable Enabled</Badge>
-                        </div>
-                        <textarea
-                          defaultValue={template.content}
-                          onChange={(e) => {
-                            const newTemplates = smsTemplates.map((t: any) => 
-                              t.id === template.id ? { ...t, content: e.target.value } : t
-                            );
-                            setSmsTemplates(newTemplates);
-                          }}
-                          onBlur={async (e) => {
-                            await updateSmsTemplate(template.id, e.target.value);
-                          }}
-                          className="w-full min-h-[80px] bg-slate-50 border-none rounded-xl p-3 text-xs font-medium focus:ring-2 focus:ring-blue-100 transition-all resize-none"
-                        />
-                      </div>
-                    ))}
+                  <div className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      name="ftpIsSecure"
+                      type="checkbox" 
+                      defaultChecked={organization?.ftpIsSecure}
+                      className="sr-only peer" 
+                    />
+                    <input type="hidden" name="__has_ftpIsSecure" value="true" />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
                   </div>
                 </div>
+
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    const form = document.querySelector("form") as HTMLFormElement;
+                    const fd = new FormData(form);
+                    toast.promise(testFtpConnection(fd), {
+                      loading: "Testing FTP connection...",
+                      success: (data) => {
+                        if (data.success) return data.message;
+                        throw new Error(data.message);
+                      },
+                      error: (err) => err.message
+                    });
+                  }}
+                  className="w-full h-10 text-xs font-black uppercase tracking-widest border-slate-200 hover:bg-slate-50"
+                >
+                  Test Connection
+                </Button>
               </div>
             </div>
           </div>
@@ -1027,7 +1062,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
             Module under development
           </div>
         );
-    }
+    };
   };
 
   return (

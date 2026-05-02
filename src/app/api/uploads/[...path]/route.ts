@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
 import fs from "fs";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -9,27 +10,71 @@ export async function GET(
 ) {
   const { path: pathSegments } = await params;
   const filePath = pathSegments.join("/");
-  const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
-  const fullPath = path.join(UPLOADS_DIR, filePath);
-
-  // Security check: ensure the file is within the uploads directory
-  if (!fullPath.startsWith(UPLOADS_DIR)) {
-    return new NextResponse("Forbidden", { status: 403 });
-  }
-
-  if (!fs.existsSync(fullPath)) {
-    return new NextResponse("Not Found", { status: 404 });
-  }
+  
+  const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
+  
+  let fileBuffer: Buffer;
+  const ext = path.extname(filePath).toLowerCase();
 
   try {
-    const fileBuffer = await readFile(fullPath);
-    const ext = path.extname(fullPath).toLowerCase();
+    if (org?.isFtpEnabled && org.ftpHost) {
+      const ftp = require("basic-ftp");
+      const client = new ftp.Client();
+      try {
+        await client.access({
+          host: org.ftpHost,
+          port: org.ftpPort || 21,
+          user: org.ftpUser || "",
+          password: org.ftpPassword || "",
+          secure: org.ftpIsSecure,
+        });
+
+        const remotePath = path.posix.join(org.ftpRoot || "/", filePath);
+        
+        // Use a custom stream to collect the buffer
+        const { Writable } = require("stream");
+        const chunks: any[] = [];
+        const writable = new Writable({
+          write(chunk: any, encoding: any, callback: any) {
+            chunks.push(chunk);
+            callback();
+          }
+        });
+
+        await client.downloadTo(writable, remotePath);
+        fileBuffer = Buffer.concat(chunks);
+      } finally {
+        client.close();
+      }
+    } else {
+      const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
+      const fullPath = path.join(UPLOADS_DIR, filePath);
+
+      // Security check
+      if (!fullPath.startsWith(UPLOADS_DIR)) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+
+      if (!fs.existsSync(fullPath)) {
+        return new NextResponse("Not Found", { status: 404 });
+      }
+
+      fileBuffer = await readFile(fullPath);
+    }
     
     let contentType = "application/octet-stream";
-    if (ext === ".png") contentType = "image/png";
-    else if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
-    else if (ext === ".svg") contentType = "image/svg+xml";
-    else if (ext === ".ico") contentType = "image/x-icon";
+    const mimeTypes: Record<string, string> = {
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".gif": "image/gif",
+      ".svg": "image/svg+xml",
+      ".webp": "image/webp",
+      ".pdf": "application/pdf",
+      ".ico": "image/x-icon",
+    };
+    
+    contentType = mimeTypes[ext] || contentType;
 
     return new NextResponse(fileBuffer, {
       headers: {
@@ -38,6 +83,7 @@ export async function GET(
       },
     });
   } catch (error) {
+    console.error("API Upload Error:", error);
     return new NextResponse("Error reading file", { status: 500 });
   }
 }

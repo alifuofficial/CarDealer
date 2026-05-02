@@ -115,6 +115,13 @@ model Organization {
   smtpFromEmail String   @default("")
   smtpFromName  String   @default("")
   isEmailEnabled Boolean @default(false)
+  ftpHost        String   @default("")
+  ftpPort        Int      @default(21)
+  ftpUser        String   @default("")
+  ftpPassword    String   @default("")
+  ftpRoot        String   @default("/")
+  ftpIsSecure    Boolean  @default(false)
+  isFtpEnabled   Boolean  @default(false)
   defaultExpiryDays Int    @default(15)
   updatedAt    DateTime @updatedAt
 }

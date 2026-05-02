@@ -2,10 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { uploadFile } from "@/lib/storage";
 
 export async function updateOrganization(formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -65,29 +64,37 @@ export async function updateOrganization(formData: FormData) {
     updateData.isEmailEnabled = false;
   }
 
-  // Persistent storage for uploads (logo/favicon)
-  const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
+  if (formData.has("ftpHost")) updateData.ftpHost = formData.get("ftpHost") as string;
+  if (formData.has("ftpUser")) updateData.ftpUser = formData.get("ftpUser") as string;
+  if (formData.has("ftpPassword")) updateData.ftpPassword = formData.get("ftpPassword") as string;
+  if (formData.has("ftpRoot")) updateData.ftpRoot = formData.get("ftpRoot") as string;
+
+  if (formData.has("ftpPort")) {
+    const val = parseInt(formData.get("ftpPort") as string);
+    if (!isNaN(val)) updateData.ftpPort = val;
+  }
+
+  if (formData.has("ftpIsSecure")) {
+    updateData.ftpIsSecure = formData.get("ftpIsSecure") === "on";
+  } else if (formData.has("__has_ftpIsSecure")) {
+    updateData.ftpIsSecure = false;
+  }
+
+  if (formData.has("isFtpEnabled")) {
+    updateData.isFtpEnabled = formData.get("isFtpEnabled") === "on";
+  } else if (formData.has("__has_isFtpEnabled")) {
+    updateData.isFtpEnabled = false;
+  }
+
 
   const logo = formData.get("logo") as File;
   if (logo && logo.size > 0) {
-    const bytes = await logo.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `logo-${Date.now()}${path.extname(logo.name)}`;
-    await mkdir(UPLOADS_DIR, { recursive: true });
-    const filePath = path.join(UPLOADS_DIR, fileName);
-    await writeFile(filePath, buffer);
-    updateData.logoUrl = `/api/uploads/${fileName}`;
+    updateData.logoUrl = await uploadFile(logo, "logo");
   }
 
   const favicon = formData.get("favicon") as File;
   if (favicon && favicon.size > 0) {
-    const bytes = await favicon.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const fileName = `favicon-${Date.now()}${path.extname(favicon.name)}`;
-    await mkdir(UPLOADS_DIR, { recursive: true });
-    const filePath = path.join(UPLOADS_DIR, fileName);
-    await writeFile(filePath, buffer);
-    updateData.faviconUrl = `/api/uploads/${fileName}`;
+    updateData.faviconUrl = await uploadFile(favicon, "favicon");
   }
 
   await prisma.organization.upsert({
@@ -103,6 +110,38 @@ export async function updateOrganization(formData: FormData) {
   revalidatePath("/settings");
   revalidatePath("/");
   return { success: true };
+}
+
+export async function testFtpConnection(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const host = formData.get("ftpHost") as string;
+  const port = parseInt(formData.get("ftpPort") as string) || 21;
+  const user = formData.get("ftpUser") as string;
+  const password = formData.get("ftpPassword") as string;
+  const secure = formData.get("ftpIsSecure") === "on";
+
+  const ftp = require("basic-ftp");
+  const client = new ftp.Client();
+  client.ftp.verbose = true;
+
+  try {
+    await client.access({
+      host,
+      port,
+      user,
+      password,
+      secure,
+    });
+    return { success: true, message: "FTP Connection Successful!" };
+  } catch (err: any) {
+    return { success: false, message: `FTP Connection Failed: ${err.message}` };
+  } finally {
+    client.close();
+  }
 }
 
 export async function getOrganization() {
