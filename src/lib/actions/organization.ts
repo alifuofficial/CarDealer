@@ -32,9 +32,18 @@ export async function updateOrganization(formData: FormData) {
   if (formData.has("smtpFromName")) updateData.smtpFromName = formData.get("smtpFromName") as string;
 
   // Number fields
-  if (formData.has("vatRate")) updateData.vatRate = parseFloat(formData.get("vatRate") as string);
-  if (formData.has("defaultExpiryDays")) updateData.defaultExpiryDays = parseInt(formData.get("defaultExpiryDays") as string);
-  if (formData.has("smtpPort")) updateData.smtpPort = parseInt(formData.get("smtpPort") as string);
+  if (formData.has("vatRate")) {
+    const val = parseFloat(formData.get("vatRate") as string);
+    if (!isNaN(val)) updateData.vatRate = val;
+  }
+  if (formData.has("defaultExpiryDays")) {
+    const val = parseInt(formData.get("defaultExpiryDays") as string);
+    if (!isNaN(val)) updateData.defaultExpiryDays = val;
+  }
+  if (formData.has("smtpPort")) {
+    const val = parseInt(formData.get("smtpPort") as string);
+    if (!isNaN(val)) updateData.smtpPort = val;
+  }
 
   // Checkboxes - special handling for "on"
   if (formData.has("isVatEnabled")) {
@@ -56,16 +65,18 @@ export async function updateOrganization(formData: FormData) {
     updateData.isEmailEnabled = false;
   }
 
+  // Persistent storage for uploads (logo/favicon)
+  const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
+
   const logo = formData.get("logo") as File;
   if (logo && logo.size > 0) {
     const bytes = await logo.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const fileName = `logo-${Date.now()}${path.extname(logo.name)}`;
-    const publicPath = path.join(process.cwd(), "public", "uploads");
-    await mkdir(publicPath, { recursive: true });
-    const filePath = path.join(publicPath, fileName);
+    await mkdir(UPLOADS_DIR, { recursive: true });
+    const filePath = path.join(UPLOADS_DIR, fileName);
     await writeFile(filePath, buffer);
-    updateData.logoUrl = `/uploads/${fileName}`;
+    updateData.logoUrl = `/api/uploads/${fileName}`;
   }
 
   const favicon = formData.get("favicon") as File;
@@ -73,11 +84,10 @@ export async function updateOrganization(formData: FormData) {
     const bytes = await favicon.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const fileName = `favicon-${Date.now()}${path.extname(favicon.name)}`;
-    const publicPath = path.join(process.cwd(), "public", "uploads");
-    await mkdir(publicPath, { recursive: true });
-    const filePath = path.join(publicPath, fileName);
+    await mkdir(UPLOADS_DIR, { recursive: true });
+    const filePath = path.join(UPLOADS_DIR, fileName);
     await writeFile(filePath, buffer);
-    updateData.faviconUrl = `/uploads/${fileName}`;
+    updateData.faviconUrl = `/api/uploads/${fileName}`;
   }
 
   await prisma.organization.upsert({

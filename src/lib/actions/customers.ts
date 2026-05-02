@@ -60,6 +60,7 @@ export async function createCustomer(formData: FormData) {
   }
 
   revalidatePath("/customers");
+  revalidatePath("/notify");
   revalidatePath("/dashboard");
   redirect("/customers");
 }
