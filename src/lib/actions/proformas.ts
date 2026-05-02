@@ -191,17 +191,17 @@ export async function submitPayment(id: string, formData: FormData) {
     receiptUrl = await uploadFile(receiptFile, `receipt-${id}`);
   }
 
-  await prisma.$executeRaw`
-    UPDATE Proforma 
-    SET 
-      status = 'UNDER_REVIEW',
-      paymentSenderName = ${senderName},
-      paymentTransactionId = ${transactionId},
-      paymentReceiptUrl = ${receiptUrl},
-      receivingAccountId = ${receivingAccountId},
-      updatedAt = ${new Date()}
-    WHERE id = ${id}
-  `;
+  await prisma.proforma.update({
+    where: { id },
+    data: {
+      status: 'UNDER_REVIEW',
+      paymentSenderName: senderName,
+      paymentTransactionId: transactionId,
+      paymentReceiptUrl: receiptUrl,
+      receivingAccountId: receivingAccountId,
+      updatedAt: new Date(),
+    }
+  });
 
   revalidatePath("/proformas");
   revalidatePath("/dashboard");

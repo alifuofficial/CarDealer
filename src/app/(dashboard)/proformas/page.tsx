@@ -14,25 +14,16 @@ export default async function ProformasPage(props: { searchParams: Promise<{ sta
   const { status: currentStatus = "all" } = await props.searchParams;
 
   const [allProformas, customers, availableCars, org, banks, companyAccounts] = await Promise.all([
-    prisma.$queryRaw<any[]>`
-      SELECT 
-        p.*, 
-        c.name as "customerName", c.phone as "customerPhone",
-        cu.chassisNumber as "carChassis",
-        m.name as "modelName",
-        u.name as "creatorName"
-      FROM Proforma p
-      LEFT JOIN Customer c ON p.customerId = c.id
-      LEFT JOIN CarUnit cu ON p.carUnitId = cu.id
-      LEFT JOIN CarModel m ON cu.modelId = m.id
-      LEFT JOIN User u ON p.createdById = u.id
-      ORDER BY p.createdAt DESC
-    `.then(rawPfs => rawPfs.map(rp => ({
-      ...rp,
-      customer: { name: rp.customerName, phone: rp.customerPhone },
-      carUnit: { chassisNumber: rp.carChassis, model: { name: rp.modelName } },
-      createdBy: { name: rp.creatorName }
-    }))),
+    prisma.proforma.findMany({
+      include: {
+        customer: true,
+        carUnit: {
+          include: { model: true }
+        },
+        createdBy: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
     prisma.customer.findMany({ orderBy: { name: "asc" } }),
     prisma.carUnit.findMany({
       where: { status: "AVAILABLE" },

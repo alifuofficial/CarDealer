@@ -33,7 +33,8 @@ export async function uploadFile(file: File, prefix: string): Promise<string> {
       const { Readable } = require("stream");
       const stream = Readable.from(buffer);
       
-      await client.uploadFrom(stream, path.posix.join(remoteRoot, fileName));
+      // Use relative filename since we are already in the correct directory
+      await client.uploadFrom(stream, fileName);
       
       return `/api/uploads/${fileName}`;
     } catch (err) {

@@ -179,12 +179,12 @@ export async function testFtpUpload(formData: FormData) {
     const stream = Readable.from(buffer);
     const testFileName = `test-upload-${Date.now()}.txt`;
     
-    const remotePath = path.posix.join(remoteRoot, testFileName);
-    await client.uploadFrom(stream, remotePath);
+    // Use relative filename since we are already in the correct directory
+    await client.uploadFrom(stream, testFileName);
     
     // Cleanup
     try {
-      await client.remove(remotePath);
+      await client.remove(testFileName);
     } catch (e) {
       console.error("Failed to cleanup FTP test file:", e);
     }
