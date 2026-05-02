@@ -56,8 +56,12 @@ export async function sendSMS(msisdn: string, text: string) {
     const result = await response.json();
     console.log("SMS Ethiopia Response:", result);
 
-    // SMSEthiopia usually returns { status: "success", ... } or { status: "error", ... }
-    const isSuccess = result.status === "success" || result.success === true || result.code === 200;
+    // SMSEthiopia returns various success indicators depending on version/endpoint
+    const isSuccess = 
+      result.status === "success" || 
+      result.success === true || 
+      result.sent === true ||
+      result.code === 200;
 
     // Log to DB
     await prisma.smsLog.create({
