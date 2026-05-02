@@ -171,17 +171,33 @@ export async function deleteProforma(id: string) {
   return { success: true };
 }
 
+import path from "path";
+import { writeFile, mkdir } from "fs/promises";
+
 export async function submitPayment(id: string, formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session) throw new Error("Unauthorized");
 
   const senderName = formData.get("senderName") as string;
   const transactionId = formData.get("transactionId") as string;
-  const receiptUrl = formData.get("receiptUrl") as string || "UPLOADED_RECEIPT_PLACEHOLDER";
   const receivingAccountId = formData.get("receivingAccountId") as string;
+  const receiptFile = formData.get("receiptFile") as File;
 
   if (!senderName || !transactionId || !receivingAccountId) {
-    throw new Error("Missing required payment details (Bank selection is required)");
+    throw new Error("Missing required payment details");
+  }
+
+  let receiptUrl = "UPLOADED_RECEIPT_PLACEHOLDER";
+  
+  if (receiptFile && receiptFile.size > 0) {
+    const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
+    const bytes = await receiptFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const fileName = `receipt-${id}-${Date.now()}${path.extname(receiptFile.name)}`;
+    await mkdir(UPLOADS_DIR, { recursive: true });
+    const filePath = path.join(UPLOADS_DIR, fileName);
+    await writeFile(filePath, buffer);
+    receiptUrl = `/api/uploads/${fileName}`;
   }
 
   await prisma.$executeRaw`
@@ -191,7 +207,8 @@ export async function submitPayment(id: string, formData: FormData) {
       paymentSenderName = ${senderName},
       paymentTransactionId = ${transactionId},
       paymentReceiptUrl = ${receiptUrl},
-      receivingAccountId = ${receivingAccountId}
+      receivingAccountId = ${receivingAccountId},
+      updatedAt = ${new Date()}
     WHERE id = ${id}
   `;
 

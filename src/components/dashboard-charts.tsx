@@ -27,7 +27,7 @@ const statusData = [
   { name: "Sold", value: 200, color: "#f43f5e" },       // Rose
 ];
 
-export function InventoryChart() {
+export function InventoryChart({ data }: { data: any[] }) {
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -88,13 +88,14 @@ export function InventoryChart() {
   );
 }
 
-export function StatusDistributionChart() {
+export function StatusDistributionChart({ data }: { data: any[] }) {
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
   return (
     <div className="h-full w-full relative flex items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={statusData}
+            data={data}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -102,7 +103,7 @@ export function StatusDistributionChart() {
             paddingAngle={8}
             dataKey="value"
           >
-            {statusData.map((entry, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
             ))}
           </Pie>
@@ -120,7 +121,7 @@ export function StatusDistributionChart() {
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total</span>
-        <span className="text-xl font-bold text-slate-900">900</span>
+        <span className="text-xl font-bold text-slate-900">{total}</span>
       </div>
     </div>
   );

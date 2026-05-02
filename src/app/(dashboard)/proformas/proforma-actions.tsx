@@ -86,22 +86,13 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
     e.preventDefault();
     setIsLoading(true);
     try {
-      let receiptUrl = "NO_FILE";
-      
-      if (selectedFile) {
-        // Convert file to Base64 for mock storage in DB
-        receiptUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(selectedFile);
-        });
-      }
-
       const formData = new FormData();
       formData.append("senderName", senderName);
       formData.append("transactionId", transactionId);
       formData.append("receivingAccountId", receivingAccountId);
-      formData.append("receiptUrl", receiptUrl);
+      if (selectedFile) {
+        formData.append("receiptFile", selectedFile);
+      }
 
       await submitPayment(proforma.id, formData);
       toast.success("Payment submitted for review");
@@ -222,9 +213,9 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
                 <CreditCard className="mr-2 h-3.5 w-3.5" /> Pay Now
               </DropdownMenuItem>
             )}
-            {isAccountant && proforma.status === "UNDER_REVIEW" && (
-              <DropdownMenuItem onClick={() => setIsReviewOpen(true)} className="bg-amber-50 text-amber-700 font-bold">
-                <ShieldCheck className="mr-2 h-3.5 w-3.5" /> Review Payment
+            {isAccountant && (proforma.status === "UNDER_REVIEW" || proforma.status === "PAID") && (
+              <DropdownMenuItem onClick={() => setIsReviewOpen(true)} className="bg-emerald-50 text-emerald-700 font-bold">
+                <ShieldCheck className="mr-2 h-3.5 w-3.5" /> {proforma.status === "PAID" ? "View Payment Proof" : "Review Payment"}
               </DropdownMenuItem>
             )}
             {canManage && (
@@ -538,28 +529,37 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button 
-              onClick={handleReject}
-              variant="outline"
-              className="flex-1 h-11 border-red-200 text-red-600 font-bold hover:bg-red-50 hover:text-red-700"
-              disabled={isLoading}
-            >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject & Clear"}
-            </Button>
-            <Button 
-              onClick={handleApprove}
-              className="flex-2 w-[60%] h-11 bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100"
-              disabled={isLoading}
-            >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Confirm & Finalize
-                </div>
-              )}
-            </Button>
-          </div>
+          {proforma.status !== "PAID" ? (
+            <div className="flex gap-3 pt-2">
+              <Button 
+                onClick={handleReject}
+                variant="outline"
+                className="flex-1 h-11 border-red-200 text-red-600 font-bold hover:bg-red-50 hover:text-red-700"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject & Clear"}
+              </Button>
+              <Button 
+                onClick={handleApprove}
+                className="flex-2 w-[60%] h-11 bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Confirm & Finalize
+                  </div>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="pt-2">
+               <div className="flex items-center justify-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 text-[10px] font-black uppercase">
+                 <CheckCircle className="h-4 w-4" />
+                 Transaction Verified & Archived
+               </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

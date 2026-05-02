@@ -72,6 +72,38 @@ async function getAdminStats() {
     _count: { status: true },
   });
 
+  // Fetch chart data (last 6 months)
+  const chartData = [];
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+    const [carsCount, customersCount] = await Promise.all([
+      prisma.carUnit.count({ where: { createdAt: { gte: startOfMonth, lte: endOfMonth } } }),
+      prisma.customer.count({ where: { createdAt: { gte: startOfMonth, lte: endOfMonth } } }),
+    ]);
+
+    chartData.push({
+      name: startOfMonth.toLocaleString("default", { month: "short" }),
+      cars: carsCount,
+      customers: customersCount,
+    });
+  }
+
+  // Fetch status distribution
+  const statusCounts = await prisma.carUnit.groupBy({
+    by: ["status"],
+    _count: { status: true },
+  });
+
+  const statusDistribution = [
+    { name: "Available", value: statusCounts.find(s => s.status === "AVAILABLE")?._count.status || 0, color: "#3b82f6" },
+    { name: "Reserved", value: statusCounts.find(s => s.status === "RESERVED")?._count.status || 0, color: "#6366f1" },
+    { name: "Sold", value: statusCounts.find(s => s.status === "SOLD")?._count.status || 0, color: "#f43f5e" },
+  ];
+
   return {
     totalCars,
     availableCars,
@@ -79,6 +111,8 @@ async function getAdminStats() {
     totalUsers,
     recentCars,
     recentCustomers,
+    chartData,
+    statusDistribution,
     smsStats: {
       success: smsStats.find((s) => s.status === "success")?._count.status || 0,
       error: smsStats.find((s) => s.status === "error")?._count.status || 0,

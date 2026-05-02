@@ -19,6 +19,8 @@ type AdminDashboardProps = {
     totalUsers: number;
     recentCars: Vehicle[];
     recentCustomers: Customer[];
+    chartData: any[];
+    statusDistribution: any[];
     smsStats: {
       success: number;
       error: number;
@@ -115,14 +117,14 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
             </div>
           </div>
           <div className="h-60">
-            <InventoryChart />
+            <InventoryChart data={stats.chartData} />
           </div>
         </div>
 
         <div className="bg-white border rounded-[2rem] p-6 shadow-sm">
           <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 mb-4">Stock Status</h3>
           <div className="h-48">
-            <StatusDistributionChart />
+            <StatusDistributionChart data={stats.statusDistribution} />
           </div>
           <div className="mt-4 flex flex-wrap justify-center gap-4 pt-4 border-t border-slate-50">
             {[
