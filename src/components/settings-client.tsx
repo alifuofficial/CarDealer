@@ -32,6 +32,7 @@ import { createCompanyAccount, deleteCompanyAccount } from "@/lib/actions/accoun
 import { formatByPreference } from "@/lib/ethiopian-calendar";
 import { updateSmsTemplate } from "@/lib/actions/marketing";
 import { testSmtpConnection } from "@/lib/actions/email";
+import { resetSystemData } from "@/lib/actions/system";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -872,6 +873,41 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     <p className="text-[10px] font-bold uppercase tracking-wider text-blue-400">Ethiopia</p>
                     <p className="text-sm font-bold text-blue-900">{formatByPreference(new Date(), "ETHIOPIAN")}</p>
                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-8 border-t">
+                <h4 className="text-sm font-bold text-red-600 flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Danger Zone
+                </h4>
+                <div className="p-6 rounded-2xl border border-red-100 bg-red-50/30 space-y-4">
+                  <div>
+                    <p className="text-sm font-bold text-red-900">Reset System Data</p>
+                    <p className="text-[10px] text-red-600 font-medium leading-relaxed">
+                      This will permanently delete all customers, cars, proformas, logs, and users (except you). 
+                      Organization settings will be reset to defaults. This action cannot be undone.
+                    </p>
+                  </div>
+                  <Button 
+                    type="button"
+                    variant="destructive"
+                    className="h-10 px-6 text-[10px] font-black uppercase tracking-widest"
+                    onClick={async () => {
+                      if (confirm("CRITICAL WARNING: This will erase ALL system data. Are you absolutely sure?")) {
+                        toast.promise(resetSystemData(), {
+                          loading: "Wiping system data...",
+                          success: (data) => {
+                            router.push("/dashboard");
+                            return data.message;
+                          },
+                          error: (err) => err.message
+                        });
+                      }
+                    }}
+                  >
+                    Reset System Now
+                  </Button>
                 </div>
               </div>
             </div>
