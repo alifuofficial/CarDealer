@@ -9,6 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   const { path: pathSegments } = await params;
+  const fileName = pathSegments[pathSegments.length - 1]; // Use the last segment as the filename
   const filePath = pathSegments.join("/");
   
   const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
@@ -42,14 +43,14 @@ export async function GET(
         const remoteRoot = org.ftpRoot || "/";
         await client.ensureDir(remoteRoot);
         
-        const { PassThrough } = require("stream");
+        const { PassThrough, Readable } = require("stream");
         const passThrough = new PassThrough();
         
         // Start the download and ensure client closes after stream ends or fails
-        client.downloadTo(passThrough, filePath)
+        client.downloadTo(passThrough, fileName)
           .finally(() => client.close());
 
-        return new NextResponse(passThrough as any, {
+        return new NextResponse(Readable.toWeb(passThrough) as any, {
           headers: {
             "Content-Type": mimeTypes[ext] || "application/octet-stream",
             "Cache-Control": "public, max-age=31536000, immutable",

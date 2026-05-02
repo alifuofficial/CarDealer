@@ -36,12 +36,14 @@ export async function uploadFile(file: File, prefix: string): Promise<string> {
       // Use relative filename since we are already in the correct directory
       await client.uploadFrom(stream, fileName);
       
-      // Return public URL if configured, otherwise use proxy
+      // Return local proxy URL for better compatibility (iframes, CORS)
+      // Even if ftpBaseUrl is configured, the proxy is more reliable for in-app previews
+      /*
       if (org.ftpBaseUrl) {
-        // Ensure no double slashes
         const baseUrl = org.ftpBaseUrl.endsWith("/") ? org.ftpBaseUrl.slice(0, -1) : org.ftpBaseUrl;
         return `${baseUrl}/${fileName}`;
       }
+      */
       
       return `/api/uploads/${fileName}`;
     } catch (err) {
