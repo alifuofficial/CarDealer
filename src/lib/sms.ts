@@ -29,10 +29,11 @@ export async function sendSMS(msisdn: string, text: string) {
   }
 
   try {
-    const response = await fetch("https://smsethiopia.et/api/sms/send", {
+    console.log(`Sending SMS to ${formattedNumber} via SMSEthiopia.com...`);
+    const response = await fetch("https://smsethiopia.com/api/sms/send", {
       method: "POST",
       headers: {
-        "KEY": org.smsApiKey,
+        "KEY": org.smsApiKey.trim(),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -41,15 +42,24 @@ export async function sendSMS(msisdn: string, text: string) {
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`SMS Ethiopia HTTP Error ${response.status}:`, errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
     const result = await response.json();
     console.log("SMS Ethiopia Response:", result);
+
+    // SMSEthiopia usually returns { status: "success", ... } or { status: "error", ... }
+    const isSuccess = result.status === "success" || result.success === true || result.code === 200;
 
     // Log to DB
     await prisma.smsLog.create({
       data: {
         to: formattedNumber,
         message: text,
-        status: result.status === "success" ? "success" : "error",
+        status: isSuccess ? "success" : "error",
         providerResponse: JSON.stringify(result),
       },
     });
