@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String     @id @default(uuid())
+  name             String
+  email            String     @unique
+  password         String
+  phone            String?    @unique
+  role             String     // ADMIN, SELLER, ACCOUNTANT
+  customers        Customer[]
+  createdProformas Proforma[] @relation("ProformaCreator")
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model CarModel {
+  id         String    @id @default(uuid())
+  name       String    // e.g., "Corolla 2024"
+  totalUnits Int
+  units      CarUnit[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model CarUnit {
+  id            String    @id @default(uuid())
+  chassisNumber String    @unique
+  status        String    @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+  unitPrice     Float     @default(0)
+  modelId       String
+  model         CarModel  @relation(fields: [modelId], references: [id])
+  proforma      Proforma?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Bank {
+  id        String   @id @default(uuid())
+  name      String   @unique // e.g., "CBE", "Abyssinia", "Awash"
+  type      String   @default("BANK") // BANK, MICROFINANCE
+  proformas Proforma[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id          String     @id @default(uuid())
+  name        String     // Stored as "{Customer Name} - {Seller Name}"
+  phone       String     @unique
+  type        String     // INDIVIDUAL, BUSINESS
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id])
+  proformas   Proforma[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Proforma {
+  id          String   @id @default(uuid())
+  number      String   @unique // e.g., "PF-2024-001"
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  carUnitId   String   @unique
+  carUnit     CarUnit  @relation(fields: [carUnitId], references: [id])
+  amount      Float
+  paymentMethod String   @default("CASH") // CASH, CREDIT
+  bankId       String?
+  bank         Bank?    @relation(fields: [bankId], references: [id])
+  advancePayment Float   @default(0)
+  creditAmount   Float   @default(0)
+  status      String   @default("DRAFT") // DRAFT, SENT, PAID, CANCELLED, UNDER_REVIEW
+  expiryDate  DateTime?
+  
+  // Payment Verification
+  paymentSenderName     String?
+  paymentTransactionId  String?
+  paymentReceiptUrl     String?
+  receivingAccountId    String?
+  paymentVerifiedAt     DateTime?
+
+  createdById String
+  createdBy   User     @relation("ProformaCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Organization {
+  id           String   @id @default("singleton") // Only one organization record
+  name         String   @default("Alif Soreti Car Dealer")
+  tin          String   @default("")
+  address      String   @default("")
+  phone        String   @default("")
+  website      String   @default("")
+  logoUrl      String?
+  vatRate      Float    @default(15.0)
+  isVatEnabled Boolean  @default(true)
+  calendarType String   @default("GREGORIAN") // GREGORIAN, ETHIOPIAN
+  siteTitle    String   @default("Alif Soreti Car Dealer")
+  faviconUrl   String?
+  smsApiKey    String   @default("")
+  isSmsEnabled Boolean  @default(false)
+  smtpHost      String   @default("")
+  smtpPort      Int      @default(587)
+  smtpUser      String   @default("")
+  smtpPassword  String   @default("")
+  smtpFromEmail String   @default("")
+  smtpFromName  String   @default("")
+  isEmailEnabled Boolean @default(false)
+  defaultExpiryDays Int    @default(15)
+  updatedAt    DateTime @updatedAt
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  userId    String
+  code      String
+  type      String   // EMAIL, SMS
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model SmsLog {
+  id        String   @id @default(uuid())
+  to        String
+  message   String
+  status    String   // success, error
+  providerResponse String?
+  createdAt DateTime @default(now())
+}
+
+model CompanyAccount {
+  id            String   @id @default(uuid())
+  bankName      String
+  accountName   String
+  accountNumber String
+  swiftCode     String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+model SmsTemplate {
+  id        String   @id @default(uuid())
+  name      String   @unique // e.g., "PROFORMA_CREATED", "MARKETING_GENERAL"
+  content   String   // The message with variables like [CustomerName]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

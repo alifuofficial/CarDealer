@@ -1,0 +1,23 @@
+-- RedefineTables
+PRAGMA defer_foreign_keys=ON;
+PRAGMA foreign_keys=OFF;
+CREATE TABLE "new_Organization" (
+    "id" TEXT NOT NULL PRIMARY KEY DEFAULT 'singleton',
+    "name" TEXT NOT NULL DEFAULT 'Alif Soreti Car Dealer',
+    "tin" TEXT NOT NULL DEFAULT '',
+    "address" TEXT NOT NULL DEFAULT '',
+    "phone" TEXT NOT NULL DEFAULT '',
+    "website" TEXT NOT NULL DEFAULT '',
+    "logoUrl" TEXT,
+    "vatRate" REAL NOT NULL DEFAULT 15.0,
+    "isVatEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "calendarType" TEXT NOT NULL DEFAULT 'GREGORIAN',
+    "siteTitle" TEXT NOT NULL DEFAULT 'Alif Soreti Car Dealer',
+    "faviconUrl" TEXT,
+    "updatedAt" DATETIME NOT NULL
+);
+INSERT INTO "new_Organization" ("address", "calendarType", "id", "isVatEnabled", "logoUrl", "name", "phone", "tin", "updatedAt", "vatRate", "website") SELECT "address", "calendarType", "id", "isVatEnabled", "logoUrl", "name", "phone", "tin", "updatedAt", "vatRate", "website" FROM "Organization";
+DROP TABLE "Organization";
+ALTER TABLE "new_Organization" RENAME TO "Organization";
+PRAGMA foreign_keys=ON;
+PRAGMA defer_foreign_keys=OFF;
