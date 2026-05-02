@@ -32,21 +32,23 @@ export async function GET(
         const remoteRoot = org.ftpRoot || "/";
         await client.ensureDir(remoteRoot);
         
-        // Use a custom stream to collect the buffer
-        const { Writable } = require("stream");
-        const chunks: any[] = [];
-        const writable = new Writable({
-          write(chunk: any, encoding: any, callback: any) {
-            chunks.push(chunk);
-            callback();
-          }
-        });
+        const { PassThrough } = require("stream");
+        const passThrough = new PassThrough();
+        
+        // Start the download and ensure client closes after stream ends or fails
+        client.downloadTo(passThrough, filePath)
+          .finally(() => client.close());
 
-        // Download using relative path since we are in the correct directory
-        await client.downloadTo(writable, filePath);
-        fileBuffer = Buffer.concat(chunks);
-      } finally {
+        return new NextResponse(passThrough as any, {
+          headers: {
+            "Content-Type": mimeTypes[ext] || "application/octet-stream",
+            "Cache-Control": "public, max-age=31536000, immutable",
+          },
+        });
+      } catch (err) {
         client.close();
+        console.error("FTP Download Error:", err);
+        throw err;
       }
     } else {
       const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
