@@ -24,6 +24,7 @@ RUN npx prisma generate
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 ENV DATABASE_URL="file:./dev.db"
+RUN npx prisma db push --accept-data-loss
 
 RUN npm run build
 
