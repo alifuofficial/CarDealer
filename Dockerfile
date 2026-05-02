@@ -34,6 +34,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 # ENV NEXT_TELEMETRY_DISABLED 1
+RUN npm install -g prisma@5.22.0
 
 RUN addgroup -S -g 1001 nodejs
 RUN adduser -S -u 1001 -G nodejs nextjs

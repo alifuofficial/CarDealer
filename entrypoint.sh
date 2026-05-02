@@ -2,8 +2,8 @@
 
 # Run Prisma migrations
 echo "Running database migrations..."
-npx prisma@5.22.0 db push --accept-data-loss
+prisma db push --accept-data-loss
 
 # Start the application
-echo "Starting the application..."
-node server.js
+echo "Starting the application on port $PORT..."
+exec node server.js
