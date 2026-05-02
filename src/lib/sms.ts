@@ -5,7 +5,7 @@ import { prisma } from "./prisma";
  * @param to Recipient phone number (e.g. 251911234567)
  * @param text Message content (max 160 chars)
  */
-export async function sendSms(to: string, text: string) {
+export async function sendSMS(to: string, text: string) {
   const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
   
   if (!org?.isSmsEnabled || !org.smsApiKey) {
@@ -61,4 +61,16 @@ export async function sendSms(to: string, text: string) {
 
     throw error;
   }
+}
+
+/**
+ * Replaces placeholders in SMS templates with actual data
+ */
+export function replaceSmsVariables(template: string, variables: Record<string, string>) {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    // Replace both [Key] and [key] formats
+    result = result.replace(new RegExp(`\\[${key}\\]`, 'gi'), value || "");
+  }
+  return result;
 }
