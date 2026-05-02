@@ -533,9 +533,15 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                         const fd = new FormData();
                         fd.append("name", nameInput.value);
                         fd.append("type", typeInput.value);
-                        await createBank(fd);
-                        nameInput.value = "";
-                        router.refresh();
+                        toast.promise(createBank(fd), {
+                          loading: "Adding institution...",
+                          success: () => {
+                            nameInput.value = "";
+                            router.refresh();
+                            return "Institution added successfully";
+                          },
+                          error: (err) => err.message || "Failed to add institution"
+                        });
                       }
                     }}
                     className="h-10 bg-slate-900 hover:bg-slate-800 text-white font-bold px-6"
@@ -577,8 +583,14 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                               type="button"
                               variant="ghost" 
                               onClick={async () => {
-                                await deleteBank(bank.id);
-                                router.refresh();
+                                toast.promise(deleteBank(bank.id), {
+                                  loading: "Removing...",
+                                  success: () => {
+                                    router.refresh();
+                                    return "Institution removed";
+                                  },
+                                  error: (err) => err.message
+                                });
                               }}
                               className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                             >
@@ -638,12 +650,18 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                       fd.append("accountNumber", accNum.value);
                       fd.append("swiftCode", swift.value);
                       
-                      await createCompanyAccount(fd);
-                      bankName.value = "";
-                      accName.value = "";
-                      accNum.value = "";
-                      swift.value = "";
-                      router.refresh();
+                      toast.promise(createCompanyAccount(fd), {
+                        loading: "Adding payment method...",
+                        success: () => {
+                          bankName.value = "";
+                          accName.value = "";
+                          accNum.value = "";
+                          swift.value = "";
+                          router.refresh();
+                          return "Payment method added successfully";
+                        },
+                        error: (err) => err.message || "Failed to add payment method"
+                      });
                     }
                   }}
                   className="w-full h-10 bg-slate-900 hover:bg-slate-800 text-white font-bold"
@@ -685,8 +703,14 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                               type="button"
                               variant="ghost" 
                               onClick={async () => {
-                                await deleteCompanyAccount(acc.id);
-                                router.refresh();
+                                toast.promise(deleteCompanyAccount(acc.id), {
+                                  loading: "Removing...",
+                                  success: () => {
+                                    router.refresh();
+                                    return "Account removed";
+                                  },
+                                  error: (err) => err.message
+                                });
                               }}
                               className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
                             >

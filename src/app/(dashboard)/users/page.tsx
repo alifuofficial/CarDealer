@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createUser } from "@/lib/actions/users";
 import { UserActions } from "./user-actions";
+export const dynamic = "force-dynamic";
 import {
   Table,
   TableBody,
