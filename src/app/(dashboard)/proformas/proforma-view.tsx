@@ -109,7 +109,9 @@ export function ProformaView({ proforma, organization, companyAccounts }: Profor
             <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-2">Company Information</h4>
             <p className="text-slate-600 flex items-center gap-2"><MapPin className="h-3 w-3" /> {organization.address || "Addis Ababa, Ethiopia"}</p>
             <p className="text-slate-600 flex items-center gap-2"><Phone className="h-3 w-3" /> {organization.phone || "+251 900 000 000"}</p>
-            <p className="text-slate-600 flex items-center gap-2"><Mail className="h-3 w-3" /> {organization.email || "hello@sorerti.com"}</p>
+            {organization.email && <p className="text-slate-600 flex items-center gap-2"><Mail className="h-3 w-3" /> {organization.email}</p>}
+            {organization.website && <p className="text-slate-600 flex items-center gap-2"><Globe className="h-3 w-3" /> {organization.website}</p>}
+            {organization.tin && <p className="text-slate-600 flex items-center gap-2"><Building2 className="h-3 w-3" /> TIN: {organization.tin}</p>}
           </div>
           <div className="space-y-1">
             <h4 className="font-bold text-slate-400 uppercase tracking-wider mb-2">Billing Information</h4>

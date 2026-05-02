@@ -97,6 +97,7 @@ model Organization {
   tin          String   @default("")
   address      String   @default("")
   phone        String   @default("")
+  email        String   @default("")
   website      String   @default("")
   logoUrl      String?
   vatRate      Float    @default(15.0)

@@ -20,6 +20,7 @@ export async function updateOrganization(formData: FormData) {
   if (formData.has("tin")) updateData.tin = formData.get("tin") as string;
   if (formData.has("address")) updateData.address = formData.get("address") as string;
   if (formData.has("phone")) updateData.phone = formData.get("phone") as string;
+  if (formData.has("email")) updateData.email = formData.get("email") as string;
   if (formData.has("website")) updateData.website = formData.get("website") as string;
   if (formData.has("siteTitle")) updateData.siteTitle = formData.get("siteTitle") as string;
   if (formData.has("calendarType")) updateData.calendarType = formData.get("calendarType") as string;

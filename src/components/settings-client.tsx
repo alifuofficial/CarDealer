@@ -149,7 +149,6 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               </div>
 
               <div className="flex-1 grid gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Company Name</label>
                     <input
@@ -160,16 +159,6 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">TIN Number</label>
-                    <input
-                      name="tin"
-                      defaultValue={organization?.tin || ""}
-                      className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
-                      placeholder="0012345678"
-                    />
-                  </div>
-                </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Office Address</label>
@@ -192,12 +181,33 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     />
                   </div>
                   <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Official Email</label>
+                    <input
+                      name="email"
+                      defaultValue={organization?.email || ""}
+                      className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                      placeholder="hello@alifsoreti.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Official Website</label>
                     <input
                       name="website"
                       defaultValue={organization?.website || ""}
                       className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                       placeholder="https://alifsoreti.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">TIN Number</label>
+                    <input
+                      name="tin"
+                      defaultValue={organization?.tin || ""}
+                      className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                      placeholder="0012345678"
                     />
                   </div>
                 </div>
