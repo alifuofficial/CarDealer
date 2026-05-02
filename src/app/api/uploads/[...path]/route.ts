@@ -5,9 +5,10 @@ import fs from "fs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const filePath = params.path.join("/");
+  const { path: pathSegments } = await params;
+  const filePath = pathSegments.join("/");
   const UPLOADS_DIR = process.env.NODE_ENV === "production" ? "/data/uploads" : path.join(process.cwd(), "public", "uploads");
   const fullPath = path.join(UPLOADS_DIR, filePath);
 
