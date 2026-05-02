@@ -914,11 +914,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                       variant="ghost"
                       onClick={async () => {
                         const content = (document.getElementById(`template-${template.id}`) as HTMLTextAreaElement).value;
-                        const fd = new FormData();
-                        fd.append("id", template.id);
-                        fd.append("content", content);
-                        
-                        toast.promise(updateSmsTemplate(fd), {
+                        toast.promise(updateSmsTemplate(template.id, content), {
                           loading: 'Saving template...',
                           success: 'Template updated successfully',
                           error: 'Failed to update template'
