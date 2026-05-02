@@ -38,6 +38,7 @@ import { resetSystemData } from "@/lib/actions/system";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 type SettingsClientProps = {
