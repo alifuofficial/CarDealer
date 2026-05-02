@@ -61,7 +61,7 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
   }
 
   const hasFile = proforma.paymentReceiptUrl && proforma.paymentReceiptUrl !== "NO_FILE";
-  const isPdf = hasFile && proforma.paymentReceiptUrl.startsWith("data:application/pdf");
+  const isPdf = hasFile && (proforma.paymentReceiptUrl.startsWith("data:application/pdf") || proforma.paymentReceiptUrl.toLowerCase().endsWith(".pdf"));
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10">

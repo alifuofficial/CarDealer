@@ -22,6 +22,17 @@ async function main() {
     },
   })
 
+  // Create Initial Organization Settings
+  await prisma.organization.upsert({
+    where: { id: 'singleton' },
+    update: {},
+    create: {
+      id: 'singleton',
+      name: 'Alif Soreti Car Dealer',
+    },
+  })
+  console.log('Organization settings seeded!')
+
   // Create System Admin
   await prisma.user.upsert({
     where: { email: 'admin@cardealer.local' },

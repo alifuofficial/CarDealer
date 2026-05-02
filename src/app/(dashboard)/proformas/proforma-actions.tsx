@@ -493,7 +493,8 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
 
             <div className="border rounded-2xl overflow-hidden bg-slate-900 aspect-[4/3] relative group">
               {proforma.paymentReceiptUrl && proforma.paymentReceiptUrl !== "NO_FILE" ? (
-                proforma.paymentReceiptUrl.startsWith("data:application/pdf") ? (
+                (proforma.paymentReceiptUrl.startsWith("data:application/pdf") || 
+                 proforma.paymentReceiptUrl.toLowerCase().endsWith(".pdf")) ? (
                   <iframe 
                     src={proforma.paymentReceiptUrl} 
                     className="w-full h-full border-none"
