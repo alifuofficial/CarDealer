@@ -1,13 +1,16 @@
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+// Removed bcryptjs import to avoid runtime dependency errors in standalone build
+// import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  const passwordHash = await bcrypt.hash('password123', 10)
+  // Pre-hashed 'password123'
+  const passwordHash = '$2b$10$1LiNaXSi505ht7MGvAJlr.Xo7Qf5Zn6cTRzTm4IfGnIy.oP8n9GqG'
 
   // Create Primary Admin (Requested)
-  const mainAdminPasswordHash = await bcrypt.hash('@myCardealer@303', 10)
+  // Pre-hashed '@myCardealer@303'
+  const mainAdminPasswordHash = '$2b$10$/otvIYQ5xQyFtVDKqLuzfOeiltF57FDkEA9v7Raw9tfWOekkuHvtW'
   await prisma.user.upsert({
     where: { email: 'alifuhaji@gmail.com' },
     update: {},
