@@ -34,6 +34,7 @@ import { updateSmsTemplate } from "@/lib/actions/marketing";
 import { testSmtpConnection } from "@/lib/actions/email";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 type SettingsClientProps = {
   organization: any;
