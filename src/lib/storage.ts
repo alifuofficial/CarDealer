@@ -36,6 +36,13 @@ export async function uploadFile(file: File, prefix: string): Promise<string> {
       // Use relative filename since we are already in the correct directory
       await client.uploadFrom(stream, fileName);
       
+      // Return public URL if configured, otherwise use proxy
+      if (org.ftpBaseUrl) {
+        // Ensure no double slashes
+        const baseUrl = org.ftpBaseUrl.endsWith("/") ? org.ftpBaseUrl.slice(0, -1) : org.ftpBaseUrl;
+        return `${baseUrl}/${fileName}`;
+      }
+      
       return `/api/uploads/${fileName}`;
     } catch (err) {
       console.error("FTP Upload Error:", err);

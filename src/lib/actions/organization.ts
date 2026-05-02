@@ -69,6 +69,7 @@ export async function updateOrganization(formData: FormData) {
   if (formData.has("ftpUser")) updateData.ftpUser = formData.get("ftpUser") as string;
   if (formData.has("ftpPassword")) updateData.ftpPassword = formData.get("ftpPassword") as string;
   if (formData.has("ftpRoot")) updateData.ftpRoot = formData.get("ftpRoot") as string;
+  if (formData.has("ftpBaseUrl")) updateData.ftpBaseUrl = formData.get("ftpBaseUrl") as string;
 
   if (formData.has("ftpPort")) {
     const val = parseInt(formData.get("ftpPort") as string);

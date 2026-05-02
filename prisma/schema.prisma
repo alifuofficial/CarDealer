@@ -122,6 +122,7 @@ model Organization {
   ftpRoot        String   @default("/")
   ftpIsSecure    Boolean  @default(false)
   isFtpEnabled   Boolean  @default(false)
+  ftpBaseUrl     String   @default("")
   defaultExpiryDays Int    @default(15)
   updatedAt    DateTime @updatedAt
 }
