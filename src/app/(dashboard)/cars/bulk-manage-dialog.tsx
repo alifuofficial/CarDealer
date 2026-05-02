@@ -98,7 +98,7 @@ export function BulkManageDialog({ models }: BulkManageDialogProps) {
               <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Delete by Model</h4>
             </div>
             <div className="flex gap-2">
-              <Select value={selectedModelId} onValueChange={(val: string) => setSelectedModelId(val)}>
+              <Select value={selectedModelId} onValueChange={(val: string | null) => setSelectedModelId(val || "")}>
                 <SelectTrigger className="flex-1 h-10 font-medium">
                   <SelectValue placeholder="Select a car model" />
                 </SelectTrigger>

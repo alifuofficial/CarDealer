@@ -117,9 +117,10 @@ export function CreateProformaDialog({ customers, availableCars, banks, vatSetti
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Car Unit</Label>
                 <Select 
                   name="carUnitId" 
-                  onValueChange={(val: string) => {
-                    setSelectedCarId(val);
-                    const car = availableCars.find(c => c.id === val);
+                  onValueChange={(val: string | null) => {
+                    const id = val || "";
+                    setSelectedCarId(id);
+                    const car = availableCars.find(c => c.id === id);
                     if (car) setAmount(car.unitPrice.toString());
                   }}
                   required
@@ -167,7 +168,7 @@ export function CreateProformaDialog({ customers, availableCars, banks, vatSetti
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Payment Option</Label>
-                <Select name="paymentMethod" defaultValue="CASH" onValueChange={(val: string) => setPaymentMethod(val)}>
+                <Select name="paymentMethod" defaultValue="CASH" onValueChange={(val: string | null) => setPaymentMethod(val || "CASH")}>
                   <SelectTrigger className="w-full h-10 font-medium text-slate-700">
                     <SelectValue />
                   </SelectTrigger>
