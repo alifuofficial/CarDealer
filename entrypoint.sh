@@ -12,6 +12,9 @@ fi
 echo "Running database synchronization..."
 prisma db push --accept-data-loss || echo "WARNING: Database sync failed, attempting to start app anyway..."
 
+echo "Seeding initial data..."
+prisma db seed || echo "WARNING: Seeding failed, continuing anyway..."
+
 # Start the application
 echo "Starting the application on port ${PORT:-3000}..."
 exec node server.js

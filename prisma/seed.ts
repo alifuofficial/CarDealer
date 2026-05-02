@@ -6,7 +6,20 @@ const prisma = new PrismaClient()
 async function main() {
   const passwordHash = await bcrypt.hash('password123', 10)
 
-  // Create Admin
+  // Create Primary Admin (Requested)
+  const mainAdminPasswordHash = await bcrypt.hash('@myCardealer@303', 10)
+  await prisma.user.upsert({
+    where: { email: 'alifuhaji@gmail.com' },
+    update: {},
+    create: {
+      email: 'alifuhaji@gmail.com',
+      name: 'Alifu Haji',
+      password: mainAdminPasswordHash,
+      role: 'ADMIN',
+    },
+  })
+
+  // Create System Admin
   await prisma.user.upsert({
     where: { email: 'admin@cardealer.local' },
     update: {},
