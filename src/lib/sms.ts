@@ -1,92 +1,64 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "./prisma";
 
-export function replaceSmsVariables(content: string, variables: Record<string, string>) {
-  let result = content;
-  for (const [key, value] of Object.entries(variables)) {
-    // Escape square brackets for regex
-    const regex = new RegExp(`\\[${key}\\]`, "g");
-    result = result.replace(regex, value);
-  }
-  return result;
-}
-
-export async function sendSMS(msisdn: string, text: string) {
-  const org = await prisma.organization.findUnique({
-    where: { id: "singleton" },
-  });
-
-  if (!org || !org.isSmsEnabled || !org.smsApiKey) {
-    console.log("SMS skipped: Service disabled or no API key.");
-    return null;
+/**
+ * Sends an SMS using SMSEthiopia.et API
+ * @param to Recipient phone number (e.g. 251911234567)
+ * @param text Message content (max 160 chars)
+ */
+export async function sendSms(to: string, text: string) {
+  const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
+  
+  if (!org?.isSmsEnabled || !org.smsApiKey) {
+    console.log("SMS skipped: Not enabled or missing API key");
+    return { status: "skipped", message: "SMS not enabled" };
   }
 
-  // Ensure phone number starts with 251
-  let formattedNumber = msisdn.replace(/\D/g, "");
-  if (formattedNumber.startsWith("0")) {
-    formattedNumber = "251" + formattedNumber.substring(1);
-  } else if (!formattedNumber.startsWith("251")) {
-    formattedNumber = "251" + formattedNumber;
+  // Clean phone number: remove + and ensure it starts with 251
+  let msisdn = to.replace(/\+/g, "");
+  if (msisdn.startsWith("0")) {
+    msisdn = "251" + msisdn.substring(1);
+  } else if (!msisdn.startsWith("251")) {
+    msisdn = "251" + msisdn;
   }
-
-  // Truncate to 160 chars as per documentation
-  const safeText = text.substring(0, 160);
 
   try {
-    console.log(`Sending SMS to ${formattedNumber} via SMSEthiopia.et...`);
-    console.log(`Payload: { msisdn: "${formattedNumber}", textLength: ${safeText.length} }`);
-    
     const response = await fetch("https://smsethiopia.et/api/sms/send", {
       method: "POST",
       headers: {
-        "KEY": org.smsApiKey.trim(),
         "Content-Type": "application/json",
+        "KEY": org.smsApiKey,
       },
       body: JSON.stringify({
-        msisdn: formattedNumber,
-        text: safeText,
+        msisdn,
+        text,
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`SMS Ethiopia HTTP Error ${response.status}:`, errorText);
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log("SMS Ethiopia Response:", result);
-
-    // SMSEthiopia returns various success indicators depending on version/endpoint
-    const isSuccess = 
-      result.status === "success" || 
-      result.success === true || 
-      result.sent === true ||
-      result.code === 200;
-
-    // Log to DB
+    const data = await response.json();
+    
+    // Log the SMS in our database
     await prisma.smsLog.create({
       data: {
-        to: formattedNumber,
+        to: msisdn,
         message: text,
-        status: isSuccess ? "success" : "error",
-        providerResponse: JSON.stringify(result),
+        status: data.status === "success" ? "success" : "error",
+        providerResponse: JSON.stringify(data),
       },
     });
 
-    return result;
+    return data;
   } catch (error) {
     console.error("SMS Ethiopia Error:", error);
     
-    // Log failure
     await prisma.smsLog.create({
       data: {
         to: msisdn,
         message: text,
         status: "error",
-        providerResponse: error instanceof Error ? error.message : "Unknown error",
+        providerResponse: error instanceof Error ? error.message : "Unknown fetch error",
       },
     });
 
-    return { status: "error", message: "Failed to connect to SMS service" };
+    throw error;
   }
 }

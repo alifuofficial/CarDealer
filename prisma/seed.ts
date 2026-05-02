@@ -65,6 +65,18 @@ async function main() {
       content: 'Hello [CustomerName], your proforma [ProformaNumber] for [CarModel] is ready. Total: [Amount] ETB. Valid until [ExpiryDate].',
     },
     {
+      name: 'PROFORMA_REMINDER_2_DAYS',
+      content: 'Hello [CustomerName], this is a reminder that your proforma [ProformaNumber] will expire in 2 days. Please complete payment to reserve your [CarModel].',
+    },
+    {
+      name: 'PROFORMA_FINAL_DAY',
+      content: 'URGENT: Hello [CustomerName], your proforma [ProformaNumber] expires TODAY. Contact Alif Soreti immediately if you wish to proceed.',
+    },
+    {
+      name: 'PROFORMA_PAID',
+      content: 'Payment Confirmed! Hello [CustomerName], we have received your payment for proforma [ProformaNumber]. Thank you for choosing Alif Soreti.',
+    },
+    {
       name: 'MARKETING_HOLIDAY',
       content: 'Eid Mubarak! Visit Alif Soreti for exclusive holiday discounts on all [Year] models. Limited time offer!',
     },

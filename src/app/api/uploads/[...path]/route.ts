@@ -14,6 +14,16 @@ export async function GET(
   const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
   
   let fileBuffer: Buffer;
+  const mimeTypes: Record<string, string> = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+    ".pdf": "application/pdf",
+    ".ico": "image/x-icon",
+  };
   const ext = path.extname(filePath).toLowerCase();
 
   try {
@@ -66,19 +76,7 @@ export async function GET(
       fileBuffer = await readFile(fullPath);
     }
     
-    let contentType = "application/octet-stream";
-    const mimeTypes: Record<string, string> = {
-      ".png": "image/png",
-      ".jpg": "image/jpeg",
-      ".jpeg": "image/jpeg",
-      ".gif": "image/gif",
-      ".svg": "image/svg+xml",
-      ".webp": "image/webp",
-      ".pdf": "application/pdf",
-      ".ico": "image/x-icon",
-    };
-    
-    contentType = mimeTypes[ext] || contentType;
+    const contentType = mimeTypes[ext] || "application/octet-stream";
 
     return new NextResponse(fileBuffer as any, {
       headers: {

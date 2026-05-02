@@ -74,6 +74,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
     { id: "Security", icon: Lock, label: "Security & Login", adminOnly: false },
     { id: "System", icon: Database, label: "System Config", adminOnly: true },
     { id: "Notifications", icon: Bell, label: "Notifications", adminOnly: true },
+    { id: "SmsTemplates", icon: MessageSquare, label: "SMS Templates", adminOnly: true },
     { id: "Storage", icon: Layout, label: "Remote Storage", adminOnly: true },
   ];
 
@@ -872,13 +873,62 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               </div>
             </div>
           </div>
-        );
       case "Notifications":
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Communication & SMS</h3>
-              <p className="text-sm text-slate-500">Manage SMS templates and delivery settings for Ethiopia.</p>
+              <h3 className="text-lg font-bold text-slate-900">Communication Channels</h3>
+              <p className="text-sm text-slate-500">Configure global notification settings and providers.</p>
+            </div>
+
+            <div className="grid gap-6 max-w-xl">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <MessageSquare className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">Enable SMS Ethiopia</h4>
+                    <p className="text-[10px] text-slate-500 font-medium italic">Required for automated proforma reminders.</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="hidden" name="__has_isSmsEnabled" value="1" />
+                  <input 
+                    name="isSmsEnabled"
+                    type="checkbox" 
+                    defaultChecked={organization?.isSmsEnabled}
+                    className="sr-only peer" 
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
+                </label>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">SMS Ethiopia API Key</Label>
+                <div className="relative">
+                  <Input 
+                    name="smsApiKey"
+                    type="password"
+                    defaultValue={organization?.smsApiKey}
+                    placeholder="Enter your KEY from smsethiopia.et"
+                    className="h-10 pl-9 font-medium" 
+                  />
+                  <div className="absolute left-3 top-3 text-slate-400">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-500 font-medium italic">You can find your API key in your SMSEthiopia Console → API Keys.</p>
+              </div>
+            </div>
+          </div>
+        );
+      case "SmsTemplates":
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">SMS Templates</h3>
+              <p className="text-sm text-slate-500">Customize automated messages for your customers.</p>
             </div>
 
             <div className="grid gap-6">
