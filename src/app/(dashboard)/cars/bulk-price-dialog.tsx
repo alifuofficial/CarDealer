@@ -70,7 +70,7 @@ export function BulkPriceDialog({ models }: BulkPriceDialogProps) {
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Select Car Model</Label>
-            <Select onValueChange={setSelectedModelId} value={selectedModelId}>
+            <Select onValueChange={(val) => setSelectedModelId(val || "")} value={selectedModelId}>
               <SelectTrigger className="h-11 font-bold border-slate-200">
                 <SelectValue placeholder="Choose a model..." />
               </SelectTrigger>
