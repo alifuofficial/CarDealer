@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { uploadFile } from "@/lib/storage";
+import path from "path";
 
 export async function updateOrganization(formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -139,6 +140,58 @@ export async function testFtpConnection(formData: FormData) {
     return { success: true, message: "FTP Connection Successful!" };
   } catch (err: any) {
     return { success: false, message: `FTP Connection Failed: ${err.message}` };
+  } finally {
+    client.close();
+  }
+}
+
+export async function testFtpUpload(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const host = formData.get("ftpHost") as string;
+  const port = parseInt(formData.get("ftpPort") as string) || 21;
+  const user = formData.get("ftpUser") as string;
+  const password = formData.get("ftpPassword") as string;
+  const secure = formData.get("ftpIsSecure") === "on";
+  const remoteRoot = formData.get("ftpRoot") as string || "/";
+
+  const ftp = require("basic-ftp");
+  const client = new ftp.Client();
+  client.ftp.verbose = true;
+
+  try {
+    await client.access({
+      host,
+      port,
+      user,
+      password,
+      secure,
+    });
+    
+    await client.ensureDir(remoteRoot);
+    
+    const { Readable } = require("stream");
+    const testContent = `FTP Test Upload from CarDealer App - ${new Date().toISOString()}`;
+    const buffer = Buffer.from(testContent);
+    const stream = Readable.from(buffer);
+    const testFileName = `test-upload-${Date.now()}.txt`;
+    
+    const remotePath = path.posix.join(remoteRoot, testFileName);
+    await client.uploadFrom(stream, remotePath);
+    
+    // Cleanup
+    try {
+      await client.remove(remotePath);
+    } catch (e) {
+      console.error("Failed to cleanup FTP test file:", e);
+    }
+    
+    return { success: true, message: "FTP Test Upload Successful!" };
+  } catch (err: any) {
+    return { success: false, message: `FTP Test Upload Failed: ${err.message}` };
   } finally {
     client.close();
   }

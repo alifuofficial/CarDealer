@@ -32,7 +32,7 @@ import { createCompanyAccount, deleteCompanyAccount } from "@/lib/actions/accoun
 import { formatByPreference } from "@/lib/ethiopian-calendar";
 import { updateSmsTemplate } from "@/lib/actions/marketing";
 import { testSmtpConnection } from "@/lib/actions/email";
-import { testFtpConnection } from "@/lib/actions/organization";
+import { testFtpConnection, testFtpUpload } from "@/lib/actions/organization";
 import { resetSystemData } from "@/lib/actions/system";
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
@@ -949,16 +949,16 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     <p className="text-[10px] text-slate-500 font-medium italic">When enabled, all new uploads will be sent to your FTP server.</p>
                   </div>
                 </div>
-                <div className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="hidden" name="__has_isFtpEnabled" value="1" />
                   <input 
                     name="isFtpEnabled"
                     type="checkbox" 
                     defaultChecked={organization?.isFtpEnabled}
                     className="sr-only peer" 
                   />
-                  <input type="hidden" name="__has_isFtpEnabled" value="true" />
                   <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
-                </div>
+                </label>
               </div>
 
               <div className="space-y-4">
@@ -1017,37 +1017,58 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     <ShieldCheck className="h-4 w-4 text-slate-400" />
                     <span className="text-xs font-bold text-slate-700">Use Secure FTP (FTPS)</span>
                   </div>
-                  <div className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="hidden" name="__has_ftpIsSecure" value="1" />
                     <input 
                       name="ftpIsSecure"
                       type="checkbox" 
                       defaultChecked={organization?.ftpIsSecure}
                       className="sr-only peer" 
                     />
-                    <input type="hidden" name="__has_ftpIsSecure" value="true" />
                     <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
-                  </div>
+                  </label>
                 </div>
 
-                <Button 
-                  type="button"
-                  variant="outline"
-                  onClick={async () => {
-                    const form = document.querySelector("form") as HTMLFormElement;
-                    const fd = new FormData(form);
-                    toast.promise(testFtpConnection(fd), {
-                      loading: "Testing FTP connection...",
-                      success: (data) => {
-                        if (data.success) return data.message;
-                        throw new Error(data.message);
-                      },
-                      error: (err) => err.message
-                    });
-                  }}
-                  className="w-full h-10 text-xs font-black uppercase tracking-widest border-slate-200 hover:bg-slate-50"
-                >
-                  Test Connection
-                </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      const form = document.querySelector("form") as HTMLFormElement;
+                      const fd = new FormData(form);
+                      toast.promise(testFtpConnection(fd), {
+                        loading: "Testing FTP connection...",
+                        success: (data) => {
+                          if (data.success) return data.message;
+                          throw new Error(data.message);
+                        },
+                        error: (err) => err.message
+                      });
+                    }}
+                    className="h-10 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:bg-slate-50"
+                  >
+                    Test Connection
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      const form = document.querySelector("form") as HTMLFormElement;
+                      const fd = new FormData(form);
+                      toast.promise(testFtpUpload(fd), {
+                        loading: "Testing FTP upload...",
+                        success: (data) => {
+                          if (data.success) return data.message;
+                          throw new Error(data.message);
+                        },
+                        error: (err) => err.message
+                      });
+                    }}
+                    className="h-10 text-[10px] font-black uppercase tracking-widest border-slate-200 hover:bg-slate-50"
+                  >
+                    Test Upload
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
