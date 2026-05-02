@@ -29,7 +29,8 @@ export async function GET(
           secure: org.ftpIsSecure,
         });
 
-        const remotePath = path.posix.join(org.ftpRoot || "/", filePath);
+        const remoteRoot = org.ftpRoot || "/";
+        await client.ensureDir(remoteRoot);
         
         // Use a custom stream to collect the buffer
         const { Writable } = require("stream");
@@ -41,7 +42,8 @@ export async function GET(
           }
         });
 
-        await client.downloadTo(writable, remotePath);
+        // Download using relative path since we are in the correct directory
+        await client.downloadTo(writable, filePath);
         fileBuffer = Buffer.concat(chunks);
       } finally {
         client.close();
