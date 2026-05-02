@@ -262,7 +262,7 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Status</Label>
-                  <Select value={status} onValueChange={setStatus}>
+                  <Select value={status} onValueChange={(val: string | null) => setStatus(val || "DRAFT")}>
                     <SelectTrigger className="w-full h-10 font-medium text-slate-700">
                       <SelectValue />
                     </SelectTrigger>
@@ -277,7 +277,7 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Payment Option</Label>
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <Select value={paymentMethod} onValueChange={(val: string | null) => setPaymentMethod(val || "CASH")}>
                     <SelectTrigger className="w-full h-10 font-medium text-slate-700">
                       <SelectValue />
                     </SelectTrigger>
@@ -319,7 +319,7 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
               {paymentMethod === "CREDIT" && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Select Bank/MFI</Label>
-                  <Select value={bankId} onValueChange={setBankId}>
+                  <Select value={bankId} onValueChange={(val: string | null) => setBankId(val || "")}>
                     <SelectTrigger className="w-full h-10 font-medium text-slate-700">
                       <SelectValue placeholder="Choose institution" />
                     </SelectTrigger>
@@ -376,7 +376,7 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Deposited To (Select Bank)</Label>
-                <Select value={receivingAccountId} onValueChange={setReceivingAccountId}>
+                <Select value={receivingAccountId} onValueChange={(val: string | null) => setReceivingAccountId(val || "")}>
                   <SelectTrigger className="w-full h-10 font-bold text-slate-700 bg-slate-50/50">
                     <SelectValue placeholder="Choose Company Bank Account" />
                   </SelectTrigger>

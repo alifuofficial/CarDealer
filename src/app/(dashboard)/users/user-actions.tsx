@@ -266,7 +266,7 @@ export function UserActions({ user }: UserActionsProps) {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">System Role</Label>
-                <Select value={role} onValueChange={setRole} disabled={isSelf}>
+                <Select value={role} onValueChange={(val: string | null) => setRole(val || "SELLER")} disabled={isSelf}>
                   <SelectTrigger className="h-10 font-medium">
                     <SelectValue />
                   </SelectTrigger>
