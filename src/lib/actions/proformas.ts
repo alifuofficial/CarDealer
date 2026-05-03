@@ -224,7 +224,7 @@ export async function submitPayment(id: string, formData: FormData) {
       const accountants = await prisma.user.findMany({
         where: {
           role: { in: ["ADMIN", "ACCOUNTANT"] },
-          phone: { not: null, not: "" }
+          phone: { not: null, notIn: [""] }
         },
         select: { phone: true, name: true }
       });
