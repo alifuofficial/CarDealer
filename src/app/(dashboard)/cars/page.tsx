@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Car, Filter, Search } from "lucide-react";
+import { Car, Filter, Search, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EditPriceDialog } from "./edit-price-dialog";
@@ -18,16 +18,69 @@ import { cn } from "@/lib/utils";
 import { BulkPriceDialog } from "./bulk-price-dialog";
 import { BulkManageDialog } from "./bulk-manage-dialog";
 import { CarActions } from "./car-actions";
+import { SearchInput } from "@/components/search-input";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
-async function getCars() {
-  return await prisma.carUnit.findMany({
-    include: {
-      model: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+async function getCars(page = 1, search = "", status = "all") {
+  const limit = 10;
+  const skip = (page - 1) * limit;
+
+  let where: any = {};
+
+  if (search) {
+    where.OR = [
+      { chassisNumber: { contains: search } },
+      { model: { name: { contains: search } } },
+    ];
+  }
+
+  if (status === "available") {
+    where.status = "AVAILABLE";
+    where.isLocked = false;
+  } else if (status === "reserved") {
+    where.status = "RESERVED";
+  } else if (status === "locked") {
+    where.isLocked = true;
+  } else if (status === "sold") {
+    where.status = "SOLD";
+  }
+
+  const [total, cars, counts] = await Promise.all([
+    prisma.carUnit.count({ where }),
+    prisma.carUnit.findMany({
+      where,
+      include: {
+        model: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.$transaction([
+      prisma.carUnit.count(),
+      prisma.carUnit.count({ where: { status: "AVAILABLE", isLocked: false } }),
+      prisma.carUnit.count({ where: { status: "RESERVED" } }),
+      prisma.carUnit.count({ where: { isLocked: true } }),
+      prisma.carUnit.count({ where: { status: "SOLD" } }),
+    ])
+  ]);
+
+  return { 
+    cars, 
+    total, 
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+    counts: {
+      all: counts[0],
+      available: counts[1],
+      reserved: counts[2],
+      locked: counts[3],
+      sold: counts[4]
+    }
+  };
 }
 
 async function getModelsSummary() {
@@ -42,15 +95,24 @@ async function getModelsSummary() {
   return models;
 }
 
-export default async function CarsPage() {
-  const [cars, models] = await Promise.all([getCars(), getModelsSummary()]);
+export default async function CarsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string; status?: string }>;
+}) {
+  const { q: search = "", page: pageStr = "1", status = "all" } = await searchParams;
+  const page = parseInt(pageStr) || 1;
+  const [{ cars, total, totalPages, counts }, models] = await Promise.all([
+    getCars(page, search, status),
+    getModelsSummary(),
+  ]);
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Car Inventory</h1>
-          <p className="text-slate-500 font-medium">View and manage all individual car units</p>
+          <p className="text-slate-500 font-medium">View and manage all individual car units ({total} total)</p>
         </div>
       </div>
 
@@ -65,16 +127,37 @@ export default async function CarsPage() {
         </div>
       </div>
 
+      <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl w-fit border">
+        {[
+          { label: "All", value: "all", count: counts.all },
+          { label: "Available", value: "available", count: counts.available },
+          { label: "Reserved", value: "reserved", count: counts.reserved },
+          { label: "Locked", value: "locked", count: counts.locked },
+          { label: "Sold", value: "sold", count: counts.sold },
+        ].map((tab) => (
+          <Link
+            key={tab.value}
+            href={`/cars?status=${tab.value}${search ? `&q=${search}` : ""}`}
+            className={cn(
+              "px-4 py-1.5 text-[11px] font-black uppercase tracking-wider rounded-lg transition-all",
+              status === tab.value
+                ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
+                : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+            )}
+          >
+            {tab.label}
+            <span className="ml-2 opacity-50">({tab.count})</span>
+          </Link>
+        ))}
+      </div>
+
       <Card className="border-none shadow-sm overflow-hidden">
         <CardHeader className="bg-white border-b py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by chassis number or model..."
-                className="pl-9 bg-slate-50 border-none"
-              />
-            </div>
+            <SearchInput 
+              placeholder="Search by chassis or model..." 
+              defaultValue={search}
+            />
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="h-9">
                 <Filter className="mr-2 h-4 w-4" />
@@ -121,16 +204,27 @@ export default async function CarsPage() {
                           <EditPriceDialog carId={car.id} currentPrice={car.unitPrice} chassisNumber={car.chassisNumber} />
                         </div>
                       </TableCell>
+
                       <TableCell className="px-6 py-4">
-                        <Badge 
-                          variant={car.status === "AVAILABLE" ? "outline" : "secondary"}
-                          className={cn(
-                            "rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase",
-                            car.status === "AVAILABLE" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600"
+                        <div className="flex flex-col gap-1">
+                          <Badge 
+                            variant={car.status === "AVAILABLE" ? "outline" : "secondary"}
+                            className={cn(
+                              "w-fit rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase",
+                              car.status === "AVAILABLE" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600"
+                            )}
+                          >
+                            {car.status}
+                          </Badge>
+                          {car.isLocked && (
+                            <Badge 
+                              variant="destructive"
+                              className="w-fit rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100"
+                            >
+                              <Lock className="mr-1 h-2.5 w-2.5" /> LOCKED
+                            </Badge>
                           )}
-                        >
-                          {car.status}
-                        </Badge>
+                        </div>
                       </TableCell>
                       <TableCell className="px-6 py-4 text-slate-500 text-[11px] font-medium">
                         {new Date(car.createdAt).toLocaleDateString()}
@@ -146,6 +240,34 @@ export default async function CarsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/cars?page=${page - 1}&status=${status}${search ? `&q=${search}` : ""}`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                page <= 1 && "pointer-events-none opacity-50"
+              )}
+            >
+              Previous
+            </Link>
+            <Link
+              href={`/cars?page=${page + 1}&status=${status}${search ? `&q=${search}` : ""}`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                page >= totalPages && "pointer-events-none opacity-50"
+              )}
+            >
+              Next
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

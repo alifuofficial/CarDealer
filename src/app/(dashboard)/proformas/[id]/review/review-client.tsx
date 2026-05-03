@@ -21,6 +21,7 @@ import { approvePayment, rejectPayment } from "@/lib/actions/proformas";
 import { toast } from "sonner";
 import Link from "next/link";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface PaymentReviewClientProps {
   proforma: any;
@@ -32,7 +33,14 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
 
-  const receivingAccount = companyAccounts.find(a => a.id === proforma.receivingAccountId);
+  const isInstitutionReview = proforma.isAdvancePaid;
+  const reviewAmount = isInstitutionReview ? proforma.creditAmount : proforma.advancePayment;
+  const senderName = isInstitutionReview ? proforma.institutionSenderName : proforma.paymentSenderName;
+  const transactionId = isInstitutionReview ? proforma.institutionTransactionId : proforma.paymentTransactionId;
+  const receiptUrl = isInstitutionReview ? proforma.institutionReceiptUrl : proforma.paymentReceiptUrl;
+  const receivingAccountId = isInstitutionReview ? proforma.institutionReceivingAccountId : proforma.receivingAccountId;
+
+  const receivingAccount = companyAccounts.find(a => a.id === receivingAccountId);
 
   async function handleApprove() {
     setIsApproving(true);
@@ -60,8 +68,8 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
     }
   }
 
-  const hasFile = proforma.paymentReceiptUrl && proforma.paymentReceiptUrl !== "NO_FILE";
-  const isPdf = hasFile && (proforma.paymentReceiptUrl.startsWith("data:application/pdf") || proforma.paymentReceiptUrl.toLowerCase().endsWith(".pdf"));
+  const hasFile = receiptUrl && receiptUrl !== "NO_FILE";
+  const isPdf = hasFile && (receiptUrl.startsWith("data:application/pdf") || receiptUrl.toLowerCase().endsWith(".pdf"));
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10">
@@ -100,14 +108,16 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
                 { icon: Car, label: "Vehicle", value: proforma.carUnit.model.name },
                 { icon: Hash, label: "Chassis No.", value: proforma.carUnit.chassisNumber },
                 { icon: User, label: "Customer", value: proforma.customer.name.split(" - ")[0] },
-                { icon: Building2, label: "Total Amount", value: `ETB ${(proforma.amount || 0).toLocaleString()}` },
+                { icon: Building2, label: proforma.paymentMethod === "CREDIT" ? (isInstitutionReview ? "Institutional Credit" : "Advance Payment") : "Total Amount", value: `ETB ${(reviewAmount || 0).toLocaleString()}` },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-2 text-slate-400">
                     <item.icon className="h-3.5 w-3.5" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
                   </div>
-                  <span className="text-xs font-bold text-slate-900">{item.value}</span>
+                  <span className={cn("text-xs font-bold", item.label.includes("Payment") || item.label.includes("Credit") ? "text-blue-600 font-black" : "text-slate-900")}>
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -120,13 +130,13 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
               <div className="flex items-center justify-between py-2 border-b border-slate-100">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sender Name</span>
                 <span className="text-xs font-bold text-slate-900">
-                  {proforma.paymentSenderName || <span className="text-slate-300 italic">Not provided</span>}
+                  {senderName || <span className="text-slate-300 italic">Not provided</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-100">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Transaction ID</span>
                 <span className="text-xs font-mono font-bold text-blue-600">
-                  {proforma.paymentTransactionId || <span className="text-slate-300 italic font-sans">Not provided</span>}
+                  {transactionId || <span className="text-slate-300 italic font-sans">Not provided</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
@@ -189,14 +199,14 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
               {hasFile ? (
                 isPdf ? (
                   <iframe
-                    src={proforma.paymentReceiptUrl}
+                    src={receiptUrl}
                     className="w-full h-full min-h-[500px] border-none"
                     title="Payment Receipt PDF"
                   />
                 ) : (
                   <div className="w-full h-full min-h-[500px] flex items-center justify-center overflow-auto p-4 bg-slate-100">
                     <img
-                      src={proforma.paymentReceiptUrl}
+                      src={receiptUrl}
                       alt="Payment Receipt"
                       className="max-w-full h-auto shadow-2xl rounded-lg"
                     />
@@ -216,7 +226,7 @@ export function PaymentReviewClient({ proforma, companyAccounts }: PaymentReview
                 <button
                   onClick={() => {
                     const win = window.open();
-                    win?.document.write(`<iframe src="${proforma.paymentReceiptUrl}" frameborder="0" style="border:0;width:100%;height:100vh;"></iframe>`);
+                    win?.document.write(`<iframe src="${receiptUrl}" frameborder="0" style="border:0;width:100%;height:100vh;"></iframe>`);
                   }}
                   className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow text-[9px] font-black uppercase tracking-widest border text-slate-700 hover:bg-white transition-all opacity-0 group-hover:opacity-100"
                 >

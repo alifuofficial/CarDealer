@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
@@ -16,7 +16,11 @@ import {
   Layout,
   Layers,
   ArrowUpRight,
-  History
+  History,
+  CheckCircle2,
+  Clock,
+  Filter,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,11 +37,58 @@ import {
 } from "recharts";
 
 export function ReportsClient({ proformas, carUnits, organization }: any) {
+  const [journalFilter, setJournalFilter] = useState("all");
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Financial-Report-${new Date().toLocaleDateString()}`,
+  });
+
+  const exportToCSV = () => {
+    const dataToExport = journalProformas;
+    const headers = ["Date", "Customer", "Phone", "Car Model", "Chassis", "Payment Method", "Total Amount", "Advance Paid", "Credit Paid", "Institution", "Status"];
+    const rows = dataToExport.map((p: any) => [
+      new Date(p.createdAt).toLocaleDateString(),
+      p.customer.name,
+      p.customer.phone,
+      p.carUnit.model.name,
+      p.carUnit.chassisNumber,
+      p.paymentMethod,
+      p.amount,
+      p.isAdvancePaid ? "YES" : "NO",
+      p.isCreditPaid ? "YES" : "NO",
+      p.bank?.name || "N/A",
+      p.status === "PAID" ? "FULLY PAID" : "PARTIAL PAID"
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Sales-Journal-${journalFilter}-${new Date().toLocaleDateString()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const getJournalStatus = (p: any) => {
+    if (p.status === "PAID") return { label: "FULLY PAID", color: "text-emerald-600 bg-emerald-50", icon: CheckCircle2 };
+    if (p.paymentMethod === "CREDIT" && p.isAdvancePaid && !p.isCreditPaid) {
+      return { label: "PARTIAL PAID", color: "text-blue-600 bg-blue-50", icon: Clock };
+    }
+    return { label: p.status, color: "text-slate-400 bg-slate-50", icon: History };
+  };
+
+  const journalProformas = proformas.filter((p: any) => {
+    const isFullyPaid = p.status === "PAID";
+    const isPartiallyPaid = p.paymentMethod === "CREDIT" && p.isAdvancePaid && !p.isCreditPaid;
+    
+    if (journalFilter === "paid") return isFullyPaid;
+    if (journalFilter === "partial") return isPartiallyPaid;
+    return isFullyPaid || isPartiallyPaid;
   });
 
   // 1. Financial Totals (Only based on PAID proformas)
@@ -220,14 +271,46 @@ export function ReportsClient({ proformas, carUnits, organization }: any) {
 
         {/* Sales Transaction Ledger */}
         <div className="bg-white border rounded-2xl overflow-hidden shadow-sm">
-          <div className="p-4 bg-slate-50/50 border-b flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-3.5 w-3.5 text-slate-500" />
-              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Final Sales Journal</h3>
-              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[8px] font-bold uppercase">Approved Only</span>
+          <div className="p-4 bg-slate-50/50 border-b flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-7 w-7 bg-white border rounded-lg flex items-center justify-center shadow-sm">
+                <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500" />
+              </div>
+              <div>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Sales Journal</h3>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Transaction Lifecycle tracking</p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] font-bold text-slate-400 uppercase">{paidProformas.length} Finalized Sales</span>
+
+            <div className="flex items-center gap-2 no-print">
+              <div className="flex items-center gap-1 bg-white border p-1 rounded-lg shadow-sm mr-2">
+                {[
+                  { label: "All", value: "all" },
+                  { label: "Full Paid", value: "paid" },
+                  { label: "Partial", value: "partial" },
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => setJournalFilter(tab.value)}
+                    className={cn(
+                      "px-3 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all",
+                      journalFilter === tab.value
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={exportToCSV}
+                className="h-8 rounded-lg text-[9px] font-black uppercase tracking-wider border-slate-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
+              >
+                <Download className="mr-2 h-3.5 w-3.5" /> CSV
+              </Button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -236,52 +319,67 @@ export function ReportsClient({ proformas, carUnits, organization }: any) {
                 <tr className="bg-slate-50/30 border-b">
                   <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
                   <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Asset Details</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Payment</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Institution</th>
-                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Pay Type</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Funding</th>
+                  <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Progress</th>
                   <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {paidProformas.map((p: any) => (
-                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-slate-900">{p.customer.name.split(" - ")[0]}</span>
-                        <span className="text-[9px] text-slate-400 font-medium">{p.customer.phone}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-slate-700">{p.carUnit.model.name}</span>
-                        <span className="text-[9px] font-mono text-slate-400">{p.carUnit.chassisNumber}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={cn(
-                        "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter",
-                        p.paymentMethod === "CASH" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
-                      )}>
-                        {p.paymentMethod}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-[10px] font-bold text-slate-600">
-                        {p.paymentMethod === "CREDIT" ? (p.bank?.name || "Pending") : "-"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-[11px] font-black text-slate-900">ETB {p.amount.toLocaleString()}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md text-[9px] font-black uppercase">PAID</span>
-                    </td>
-                  </tr>
-                ))}
-                {paidProformas.length === 0 && (
+                {journalProformas.map((p: any) => {
+                  const status = getJournalStatus(p);
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-bold text-slate-900">{p.customer.name.split(" - ")[0]}</span>
+                          <span className="text-[9px] text-slate-400 font-medium">{p.customer.phone}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-bold text-slate-700">{p.carUnit.model.name}</span>
+                          <span className="text-[9px] font-mono text-slate-400 uppercase">{p.carUnit.chassisNumber}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter",
+                          p.paymentMethod === "CASH" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-blue-50 text-blue-600 border border-blue-100"
+                        )}>
+                          {p.paymentMethod}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-[10px] font-bold text-slate-600">
+                          {p.paymentMethod === "CREDIT" ? (p.bank?.name || "Pending") : "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-tighter text-slate-400">
+                            <span>ETB {p.amount.toLocaleString()}</span>
+                          </div>
+                          <div className="h-1 w-24 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                              className={cn("h-full transition-all", p.status === "PAID" ? "bg-emerald-500 w-full" : "bg-blue-500 w-1/2")} 
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border", status.color, "border-current/10")}>
+                          <status.icon className="h-2.5 w-2.5" />
+                          <span className="text-[9px] font-black uppercase">{status.label}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {journalProformas.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
-                      <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No finalized transactions</p>
+                      <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No matching transactions</p>
                     </td>
                   </tr>
                 )}

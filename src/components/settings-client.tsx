@@ -157,16 +157,16 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               </div>
 
               <div className="flex-1 grid gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Company Name</label>
-                    <input
-                      name="name"
-                      defaultValue={organization?.name || ""}
-                      className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
-                      placeholder="Alif Soreti Car Dealer"
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Company Name</label>
+                  <input
+                    name="name"
+                    defaultValue={organization?.name || ""}
+                    className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                    placeholder="Alif Soreti Car Dealer"
+                    required
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Office Address</label>
@@ -194,7 +194,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                       name="email"
                       defaultValue={organization?.email || ""}
                       className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
-                      placeholder="hello@alifsoreti.com"
+                      placeholder="info@soretiinternatioanl.com"
                     />
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                       name="website"
                       defaultValue={organization?.website || ""}
                       className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
-                      placeholder="https://alifsoreti.com"
+                      placeholder="https://soretiinter.com"
                     />
                   </div>
                   <div className="space-y-2">
@@ -266,20 +266,20 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
             <div className="grid gap-4 max-w-xl">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Full Name</label>
-                <input 
+                <input
                   name="name"
                   defaultValue={session?.user?.name || ""}
-                  className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                  placeholder="John Doe" 
+                  className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                  placeholder="John Doe"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Email Address</label>
-                <input 
+                <input
                   name="email"
                   defaultValue={session?.user?.email || ""}
-                  className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                  placeholder="john@example.com" 
+                  className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                  placeholder="john@example.com"
                 />
               </div>
             </div>
@@ -297,35 +297,35 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Current Password</label>
-                  <input 
+                  <input
                     name="currentPassword"
                     type="password"
-                    className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                    placeholder="••••••••" 
+                    className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                    placeholder="••••••••"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-400">New Password</label>
-                    <input 
+                    <input
                       name="newPassword"
                       type="password"
-                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                      placeholder="••••••••" 
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                      placeholder="••••••••"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Confirm New Password</label>
-                    <input 
+                    <input
                       name="confirmPassword"
                       type="password"
-                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                      placeholder="••••••••" 
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                      placeholder="••••••••"
                     />
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
                 <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0" />
                 <p className="text-[10px] text-blue-700 font-medium leading-relaxed">
@@ -373,22 +373,22 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">SMTP Host</label>
-                      <input 
+                      <input
                         name="smtpHost"
                         defaultValue={organization?.smtpHost || ""}
-                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                        placeholder="smtp.gmail.com" 
+                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                        placeholder="smtp.gmail.com"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">SMTP Port</label>
-                        <input 
+                        <input
                           name="smtpPort"
                           type="number"
                           defaultValue={organization?.smtpPort || 587}
-                          className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                          placeholder="587" 
+                          className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                          placeholder="587"
                         />
                       </div>
                       <div className="space-y-2">
@@ -411,21 +411,21 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">SMTP Username</label>
-                      <input 
+                      <input
                         name="smtpUser"
                         defaultValue={organization?.smtpUser || ""}
-                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                        placeholder="user@example.com" 
+                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                        placeholder="user@example.com"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">SMTP Password</label>
-                      <input 
+                      <input
                         name="smtpPassword"
                         type="password"
                         defaultValue={organization?.smtpPassword || ""}
-                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                        placeholder="••••••••" 
+                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                        placeholder="••••••••"
                       />
                     </div>
                   </div>
@@ -441,20 +441,20 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">From Email Address</label>
-                      <input 
+                      <input
                         name="smtpFromEmail"
                         defaultValue={organization?.smtpFromEmail || ""}
-                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                        placeholder="noreply@dealer.com" 
+                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                        placeholder="noreply@dealer.com"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sender Display Name</label>
-                      <input 
+                      <input
                         name="smtpFromName"
                         defaultValue={organization?.smtpFromName || ""}
-                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                        placeholder="Soreti Car Dealer" 
+                        className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                        placeholder="Soreti Car Dealer"
                       />
                     </div>
                   </div>
@@ -469,12 +469,12 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     Test your SMTP settings by sending a validation email to your identity address. Ensure all fields above are filled correctly before testing.
                   </p>
                   <div className="flex gap-2">
-                    <input 
+                    <input
                       id="test-recipient"
-                      className="flex-1 h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-amber-300" 
-                      placeholder="test@example.com" 
+                      className="flex-1 h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-amber-300"
+                      placeholder="test@example.com"
                     />
-                    <Button 
+                    <Button
                       type="button"
                       variant="outline"
                       className="h-10 border-amber-200 text-amber-700 font-black text-[10px] uppercase tracking-widest hover:bg-amber-100"
@@ -489,7 +489,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                         const inputs = document.querySelectorAll('input[name^="smtp"]');
                         inputs.forEach((input: any) => fd.append(input.name, input.value));
                         fd.append("testRecipient", recipient);
-                        
+
                         toast.promise(testSmtpConnection(fd), {
                           loading: 'Testing SMTP connection...',
                           success: (data) => data.message,
@@ -519,19 +519,19 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               <div className="p-6 border rounded-2xl bg-slate-50/50 space-y-4">
                 <h4 className="text-sm font-bold text-slate-900">Add New Institution</h4>
                 <div className="flex gap-3">
-                  <input 
+                  <input
                     id="new-bank-name"
-                    className="flex-1 h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                    placeholder="Bank Name (e.g. CBE, Awash)" 
+                    className="flex-1 h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
+                    placeholder="Bank Name (e.g. CBE, Awash)"
                   />
-                  <select 
+                  <select
                     id="new-bank-type"
                     className="w-40 h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                   >
                     <option value="BANK">Bank</option>
                     <option value="MICROFINANCE">Microfinance</option>
                   </select>
-                  <Button 
+                  <Button
                     type="button"
                     onClick={async () => {
                       const nameInput = document.getElementById("new-bank-name") as HTMLInputElement;
@@ -586,9 +586,9 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <Button 
+                            <Button
                               type="button"
-                              variant="ghost" 
+                              variant="ghost"
                               onClick={async () => {
                                 toast.promise(deleteBank(bank.id), {
                                   loading: "Removing...",
@@ -631,7 +631,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Name</label>
-                    <input id="acc-name" className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" placeholder="e.g. Alif Soreti PLC" />
+                    <input id="acc-name" className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" placeholder="e.g. Soreti International Trading" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Number</label>
@@ -642,21 +642,21 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     <input id="acc-swift" className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" placeholder="e.g. ABYS ET AA" />
                   </div>
                 </div>
-                <Button 
+                <Button
                   type="button"
                   onClick={async () => {
                     const bankName = document.getElementById("acc-bank-name") as HTMLInputElement;
                     const accName = document.getElementById("acc-name") as HTMLInputElement;
                     const accNum = document.getElementById("acc-number") as HTMLInputElement;
                     const swift = document.getElementById("acc-swift") as HTMLInputElement;
-                    
+
                     if (bankName.value && accName.value && accNum.value) {
                       const fd = new FormData();
                       fd.append("bankName", bankName.value);
                       fd.append("accountName", accName.value);
                       fd.append("accountNumber", accNum.value);
                       fd.append("swiftCode", swift.value);
-                      
+
                       toast.promise(createCompanyAccount(fd), {
                         loading: "Adding payment method...",
                         success: () => {
@@ -706,9 +706,9 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                             {acc.swiftCode && <p className="text-[9px] text-slate-400 mt-1 uppercase">SWIFT: {acc.swiftCode}</p>}
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <Button 
+                            <Button
                               type="button"
-                              variant="ghost" 
+                              variant="ghost"
                               onClick={async () => {
                                 toast.promise(deleteCompanyAccount(acc.id), {
                                   loading: "Removing...",
@@ -854,7 +854,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     </h4>
                     <p className="text-xs text-red-600 font-medium">Permanently erase all proformas, customers, and transactions.</p>
                   </div>
-                  <Button 
+                  <Button
                     type="button"
                     variant="destructive"
                     onClick={() => {
@@ -896,11 +896,11 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="hidden" name="__has_isSmsEnabled" value="1" />
-                  <input 
+                  <input
                     name="isSmsEnabled"
-                    type="checkbox" 
+                    type="checkbox"
                     defaultChecked={organization?.isSmsEnabled}
-                    className="sr-only peer" 
+                    className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                 </label>
@@ -909,12 +909,12 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">SMS Ethiopia API Key</Label>
                 <div className="relative">
-                  <Input 
+                  <Input
                     name="smsApiKey"
                     type="password"
                     defaultValue={organization?.smsApiKey}
                     placeholder="Enter your KEY from smsethiopia.et"
-                    className="h-10 pl-9 font-medium" 
+                    className="h-10 pl-9 font-medium"
                   />
                   <div className="absolute left-3 top-3 text-slate-400">
                     <Lock className="h-4 w-4" />
@@ -938,33 +938,75 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 <div key={template.id} className="p-6 rounded-3xl border bg-slate-50/50 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-white border rounded-xl flex items-center justify-center text-slate-400 shadow-sm">
+                      <div className="h-10 w-10 bg-white border rounded-xl flex items-center justify-center text-slate-400 shadow-sm relative overflow-hidden">
                         <MessageSquare className="h-5 w-5" />
+                        {!template.isActive && (
+                          <div className="absolute inset-0 bg-slate-100/80 flex items-center justify-center">
+                            <div className="h-0.5 w-full bg-red-400 rotate-45" />
+                          </div>
+                        )}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{template.name}</h4>
-                        <p className="text-[10px] text-slate-500 font-medium italic">Sent automatically on {template.trigger}</p>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{template.name.replace(/_/g, ' ')}</h4>
+                          {!template.isActive && <Badge variant="destructive" className="text-[8px] h-4">DISABLED</Badge>}
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium italic">Triggered by system event: {template.name}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-white text-[10px] font-black tracking-widest">TEMPLATE ID: {template.id}</Badge>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border shadow-sm">
+                        <span className="text-[10px] font-bold uppercase text-slate-400">Status</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            defaultChecked={template.isActive}
+                            onChange={async (e) => {
+                              const content = (document.getElementById(`template-${template.id}`) as HTMLTextAreaElement).value;
+                              toast.promise(updateSmsTemplate(template.id, content, e.target.checked), {
+                                loading: 'Updating status...',
+                                success: () => {
+                                  router.refresh();
+                                  return `Template ${e.target.checked ? 'enabled' : 'disabled'}`;
+                                },
+                                error: 'Failed to update status'
+                              });
+                            }}
+                            className="sr-only peer"
+                          />
+                          <div className="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                      <Badge variant="outline" className="bg-white text-[10px] font-black tracking-widest opacity-50">ID: {template.id.slice(0, 8)}</Badge>
+                    </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Message Content</label>
-                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Available variables: [name], [id], [amount]</span>
+                      <div className="flex gap-2">
+                        <span className="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">[CustomerName], [ProformaNumber], [Amount]</span>
+                        {template.name === 'PAYMENT_SUBMITTED' && (
+                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">[Bank], [Sender]</span>
+                        )}
+                      </div>
                     </div>
-                    <textarea 
+                    <textarea
                       id={`template-${template.id}`}
                       defaultValue={template.content}
-                      className="w-full h-24 rounded-2xl border bg-white p-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none" 
+                      disabled={!template.isActive}
+                      className={cn(
+                        "w-full h-24 rounded-2xl border p-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300 resize-none transition-all",
+                        template.isActive ? "bg-white text-slate-900" : "bg-slate-100 text-slate-400 opacity-50"
+                      )}
                     />
                   </div>
-                  
+
                   <div className="flex justify-end">
-                    <Button 
+                    <Button
                       type="button"
                       variant="ghost"
+                      disabled={!template.isActive}
                       onClick={async () => {
                         const content = (document.getElementById(`template-${template.id}`) as HTMLTextAreaElement).value;
                         toast.promise(updateSmsTemplate(template.id, content), {
@@ -975,7 +1017,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                       }}
                       className="h-9 px-6 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 hover:bg-white"
                     >
-                      Update Template
+                      Save Changes
                     </Button>
                   </div>
                 </div>
@@ -1004,11 +1046,11 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="hidden" name="__has_isFtpEnabled" value="1" />
-                  <input 
+                  <input
                     name="isFtpEnabled"
-                    type="checkbox" 
+                    type="checkbox"
                     defaultChecked={organization?.isFtpEnabled}
-                    className="sr-only peer" 
+                    className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                 </label>
@@ -1018,20 +1060,20 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Host</Label>
-                    <input 
+                    <input
                       name="ftpHost"
                       defaultValue={organization?.ftpHost}
                       placeholder="ftp.example.com"
-                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Port</Label>
-                    <input 
+                    <input
                       name="ftpPort"
                       type="number"
                       defaultValue={organization?.ftpPort || 21}
-                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                     />
                   </div>
                 </div>
@@ -1039,29 +1081,29 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Username</Label>
-                    <input 
+                    <input
                       name="ftpUser"
                       defaultValue={organization?.ftpUser}
-                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">FTP Password</Label>
-                    <input 
+                    <input
                       name="ftpPassword"
                       type="password"
                       defaultValue={organization?.ftpPassword}
-                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                      className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Remote Root Directory</Label>
-                  <input 
+                  <input
                     name="ftpRoot"
                     defaultValue={organization?.ftpRoot || "/"}
-                    className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300" 
+                    className="w-full h-10 rounded-lg border bg-white px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
                   />
                 </div>
 
@@ -1072,11 +1114,11 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="hidden" name="__has_ftpIsSecure" value="1" />
-                    <input 
+                    <input
                       name="ftpIsSecure"
-                      type="checkbox" 
+                      type="checkbox"
                       defaultChecked={organization?.ftpIsSecure}
-                      className="sr-only peer" 
+                      className="sr-only peer"
                     />
                     <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
                   </label>
@@ -1085,7 +1127,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Public Storage URL (Optional)</Label>
                   <div className="relative">
-                    <Input 
+                    <Input
                       name="ftpBaseUrl"
                       defaultValue={organization?.ftpBaseUrl}
                       placeholder="https://storage.soretiinternational.com/upload"
@@ -1099,7 +1141,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <Button 
+                  <Button
                     type="button"
                     variant="outline"
                     onClick={async () => {
@@ -1118,7 +1160,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                   >
                     Test Connection
                   </Button>
-                  <Button 
+                  <Button
                     type="button"
                     variant="outline"
                     onClick={async () => {

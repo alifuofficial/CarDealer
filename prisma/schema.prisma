@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/client_v2"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -38,6 +39,7 @@ model CarUnit {
   modelId       String
   model         CarModel  @relation(fields: [modelId], references: [id])
   proforma      Proforma?
+  isLocked      Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -79,12 +81,21 @@ model Proforma {
   status      String   @default("DRAFT") // DRAFT, SENT, PAID, CANCELLED, UNDER_REVIEW
   expiryDate  DateTime?
   
-  // Payment Verification
+  // Payment Verification (Customer Advance)
   paymentSenderName     String?
   paymentTransactionId  String?
   paymentReceiptUrl     String?
   receivingAccountId    String?
   paymentVerifiedAt     DateTime?
+  isAdvancePaid         Boolean   @default(false)
+
+  // Institutional Payment (Microfinance/Bank)
+  institutionSenderName     String?
+  institutionTransactionId  String?
+  institutionReceiptUrl     String?
+  institutionReceivingAccountId String?
+  institutionVerifiedAt     DateTime?
+  isCreditPaid              Boolean   @default(false)
 
   createdById String
   createdBy   User     @relation("ProformaCreator", fields: [createdById], references: [id])

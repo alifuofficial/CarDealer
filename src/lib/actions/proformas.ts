@@ -180,6 +180,7 @@ export async function submitPayment(id: string, formData: FormData) {
   const transactionId = formData.get("transactionId") as string;
   const receivingAccountId = formData.get("receivingAccountId") as string;
   const receiptFile = formData.get("receiptFile") as File;
+  const paymentType = formData.get("paymentType") as "ADVANCE" | "INSTITUTION" || "ADVANCE";
 
   if (!senderName || !transactionId || !receivingAccountId) {
     throw new Error("Missing required payment details");
@@ -188,20 +189,71 @@ export async function submitPayment(id: string, formData: FormData) {
   let receiptUrl = "UPLOADED_RECEIPT_PLACEHOLDER";
   
   if (receiptFile && receiptFile.size > 0) {
-    receiptUrl = await uploadFile(receiptFile, `receipt-${id}`);
+    receiptUrl = await uploadFile(receiptFile, `receipt-${id}-${paymentType.toLowerCase()}`);
   }
 
-  await prisma.proforma.update({
+  const updateData: any = {
+    status: 'UNDER_REVIEW',
+    updatedAt: new Date(),
+  };
+
+  if (paymentType === "ADVANCE") {
+    updateData.paymentSenderName = senderName;
+    updateData.paymentTransactionId = transactionId;
+    updateData.paymentReceiptUrl = receiptUrl;
+    updateData.receivingAccountId = receivingAccountId;
+  } else {
+    updateData.institutionSenderName = senderName;
+    updateData.institutionTransactionId = transactionId;
+    updateData.institutionReceiptUrl = receiptUrl;
+    updateData.institutionReceivingAccountId = receivingAccountId;
+  }
+
+  const updatedProforma = await prisma.proforma.update({
     where: { id },
-    data: {
-      status: 'UNDER_REVIEW',
-      paymentSenderName: senderName,
-      paymentTransactionId: transactionId,
-      paymentReceiptUrl: receiptUrl,
-      receivingAccountId: receivingAccountId,
-      updatedAt: new Date(),
-    }
+    data: updateData
   });
+
+  // Notify Accountants/Admins about the new submission
+  try {
+    const template = await prisma.smsTemplate.findUnique({
+      where: { name: "PAYMENT_SUBMITTED" }
+    });
+
+    if (template?.isActive) {
+      const accountants = await prisma.user.findMany({
+        where: {
+          role: { in: ["ADMIN", "ACCOUNTANT"] },
+          phone: { not: null, not: "" }
+        },
+        select: { phone: true, name: true }
+      });
+
+      if (accountants.length > 0) {
+        // Fetch receiving bank name
+        const companyAccount = await prisma.companyAccount.findUnique({
+          where: { id: receivingAccountId }
+        });
+        const bankName = companyAccount?.bankName || "Unknown Bank";
+
+        const message = replaceSmsVariables(template.content, {
+          ProformaNumber: updatedProforma.number,
+          Amount: updatedProforma.amount.toLocaleString(),
+          Bank: bankName,
+          Sender: senderName,
+        });
+        
+        await Promise.allSettled(
+          accountants.map(acc => {
+            if (acc.phone) return sendSMS(acc.phone, message);
+            return Promise.resolve();
+          })
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Accountant notification failed:", err);
+  }
 
   revalidatePath("/proformas");
   revalidatePath("/dashboard");
@@ -239,13 +291,31 @@ export async function approvePayment(id: string) {
     throw new Error("Unauthorized: Only accountants or admins can approve payments");
   }
 
-  await prisma.$executeRaw`
-    UPDATE Proforma 
-    SET 
-      status = 'PAID',
-      paymentVerifiedAt = ${new Date()}
-    WHERE id = ${id}
-  `;
+  const proforma = await prisma.proforma.findUnique({ where: { id } });
+  if (!proforma) throw new Error("Proforma not found");
+
+  if (!proforma.isAdvancePaid) {
+    // Approve Customer Advance
+    const nextStatus = proforma.paymentMethod === "CASH" ? "PAID" : "SENT";
+    await prisma.proforma.update({
+      where: { id },
+      data: {
+        status: nextStatus,
+        isAdvancePaid: true,
+        paymentVerifiedAt: new Date(),
+      }
+    });
+  } else {
+    // Approve Institutional Credit
+    await prisma.proforma.update({
+      where: { id },
+      data: {
+        status: "PAID",
+        isCreditPaid: true,
+        institutionVerifiedAt: new Date(),
+      }
+    });
+  }
 
   revalidatePath("/proformas");
   revalidatePath("/dashboard");
@@ -260,16 +330,34 @@ export async function rejectPayment(id: string) {
     throw new Error("Unauthorized: Only accountants or admins can reject payments");
   }
 
-  await prisma.$executeRaw`
-    UPDATE Proforma 
-    SET 
-      status = 'REJECTED',
-      paymentSenderName = NULL,
-      paymentTransactionId = NULL,
-      paymentReceiptUrl = NULL,
-      receivingAccountId = NULL
-    WHERE id = ${id}
-  `;
+  const proforma = await prisma.proforma.findUnique({ where: { id } });
+  if (!proforma) throw new Error("Proforma not found");
+
+  if (!proforma.isAdvancePaid) {
+    // Reject Customer Advance
+    await prisma.proforma.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        paymentSenderName: null,
+        paymentTransactionId: null,
+        paymentReceiptUrl: null,
+        receivingAccountId: null
+      }
+    });
+  } else {
+    // Reject Institutional Credit
+    await prisma.proforma.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        institutionSenderName: null,
+        institutionTransactionId: null,
+        institutionReceiptUrl: null,
+        institutionReceivingAccountId: null
+      }
+    });
+  }
 
   revalidatePath("/proformas");
   revalidatePath("/dashboard");

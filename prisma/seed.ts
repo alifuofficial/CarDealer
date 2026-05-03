@@ -95,6 +95,10 @@ async function main() {
       name: 'MARKETING_NEW_STOCK',
       content: 'New Stock Alert! We just received [CarModel] at Alif Soreti. Come for a test drive today.',
     },
+    {
+      name: 'PAYMENT_SUBMITTED',
+      content: 'Payment Review: PF [ProformaNumber]. Amt: ETB [Amount]. Bank: [Bank]. Sender: [Sender]. Review dashboard.',
+    },
   ];
 
   for (const template of templates) {

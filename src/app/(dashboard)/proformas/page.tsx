@@ -26,7 +26,10 @@ export default async function ProformasPage(props: { searchParams: Promise<{ sta
     }),
     prisma.customer.findMany({ orderBy: { name: "asc" } }),
     prisma.carUnit.findMany({
-      where: { status: "AVAILABLE" },
+      where: { 
+        status: "AVAILABLE",
+        isLocked: false 
+      },
       include: { model: true },
       orderBy: { model: { name: "asc" } },
     }),

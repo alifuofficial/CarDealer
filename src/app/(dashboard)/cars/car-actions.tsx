@@ -10,14 +10,17 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 import { 
   MoreHorizontal, 
   Edit, 
   Trash2, 
   Loader2,
-  Info
+  Info,
+  Lock,
+  Unlock
 } from "lucide-react";
-import { deleteCarUnit } from "@/lib/actions/cars";
+import { deleteCarUnit, toggleCarLock } from "@/lib/actions/cars";
 // I'll add updateCarUnit to cars.ts in the next step
 import { updateCarUnit } from "@/lib/actions/cars"; 
 import { 
@@ -45,6 +48,8 @@ interface CarActionsProps {
 }
 
 export function CarActions({ car }: CarActionsProps) {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -54,6 +59,19 @@ export function CarActions({ car }: CarActionsProps) {
   // Edit states
   const [chassis, setChassis] = useState(car.chassisNumber);
   const [status, setStatus] = useState(car.status);
+
+  async function handleToggleLock() {
+    setIsLoading(true);
+    try {
+      await toggleCarLock(car.id);
+      toast.success(car.isLocked ? "Unit unlocked" : "Unit locked successfully");
+      router.refresh();
+    } catch (error) {
+      toast.error("Failed to toggle lock");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -98,12 +116,26 @@ export function CarActions({ car }: CarActionsProps) {
             </Button>
           }
         />
-        <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="text-[10px] font-bold uppercase text-slate-400">Manage Unit</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Unit Management</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
               <Edit className="mr-2 h-3.5 w-3.5" /> Edit Unit
             </DropdownMenuItem>
+            
+            {isAdmin && (
+              <DropdownMenuItem 
+                onClick={handleToggleLock}
+                className={car.isLocked ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}
+              >
+                {car.isLocked ? (
+                  <><Unlock className="mr-2 h-3.5 w-3.5" /> Unlock Unit</>
+                ) : (
+                  <><Lock className="mr-2 h-3.5 w-3.5" /> Lock Unit</>
+                )}
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem className="text-red-600 focus:bg-red-50 focus:text-red-600 font-bold" onClick={() => setIsDeleteOpen(true)}>
               <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
             </DropdownMenuItem>

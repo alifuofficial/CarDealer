@@ -35,10 +35,13 @@ export async function getSmsTemplates() {
   });
 }
 
-export async function updateSmsTemplate(id: string, content: string) {
+export async function updateSmsTemplate(id: string, content: string, isActive?: boolean) {
   await prisma.smsTemplate.update({
     where: { id },
-    data: { content },
+    data: { 
+      content,
+      ...(isActive !== undefined && { isActive })
+    },
   });
   revalidatePath("/settings");
   return { success: true };

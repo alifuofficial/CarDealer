@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { CheckCircle2, AlertCircle, Calendar, ShieldCheck, Car, User } from "lucide-react";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default async function VerifyProformaPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -89,10 +91,34 @@ export default async function VerifyProformaPage(props: { params: Promise<{ id: 
             </div>
           </div>
 
-          <div className="pt-8 mt-8 border-t border-slate-100">
-            <div className="bg-slate-50 rounded-2xl p-6 flex justify-between items-center">
+          <div className="pt-8 mt-8 border-t border-slate-100 space-y-4">
+            <div className="bg-slate-50 rounded-2xl p-6 flex justify-between items-center border border-slate-100">
               <span className="text-sm font-black text-slate-900 uppercase tracking-widest">Total Amount</span>
               <span className="text-2xl font-black text-blue-600">ETB {proforma.amount.toLocaleString()}</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className={cn("p-4 rounded-2xl border", proforma.isAdvancePaid ? "bg-emerald-50 border-emerald-100" : "bg-slate-50 border-slate-100")}>
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Customer Advance</span>
+                <p className={cn("font-black", proforma.isAdvancePaid ? "text-emerald-700" : "text-slate-600")}>
+                  ETB {proforma.advancePayment.toLocaleString()}
+                </p>
+                <Badge className={cn("mt-2 text-[8px] uppercase", proforma.isAdvancePaid ? "bg-emerald-600" : "bg-slate-400")}>
+                  {proforma.isAdvancePaid ? "Verified" : "Pending"}
+                </Badge>
+              </div>
+
+              {proforma.paymentMethod === "CREDIT" && (
+                <div className={cn("p-4 rounded-2xl border", proforma.isCreditPaid ? "bg-emerald-50 border-emerald-100" : "bg-slate-50 border-slate-100")}>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">MFI/Bank Credit</span>
+                  <p className={cn("font-black", proforma.isCreditPaid ? "text-emerald-700" : "text-slate-600")}>
+                    ETB {proforma.creditAmount.toLocaleString()}
+                  </p>
+                  <Badge className={cn("mt-2 text-[8px] uppercase", proforma.isCreditPaid ? "bg-emerald-600" : "bg-slate-400")}>
+                    {proforma.isCreditPaid ? "Verified" : "Pending"}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
 

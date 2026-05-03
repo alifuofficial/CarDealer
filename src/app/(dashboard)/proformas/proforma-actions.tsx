@@ -27,6 +27,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { deleteProforma, updateProforma, submitPayment, approvePayment, rejectPayment } from "@/lib/actions/proformas";
 import { 
   Dialog, 
@@ -93,9 +94,12 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
       if (selectedFile) {
         formData.append("receiptFile", selectedFile);
       }
+      
+      const paymentType = proforma.isAdvancePaid ? "INSTITUTION" : "ADVANCE";
+      formData.append("paymentType", paymentType);
 
       await submitPayment(proforma.id, formData);
-      toast.success("Payment submitted for review");
+      toast.success(paymentType === "ADVANCE" ? "Advance payment submitted" : "Institution credit submitted");
       setIsPayOpen(false);
       router.refresh();
     } catch (error: any) {
@@ -209,8 +213,15 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
               </Link>
             } />
             {!isFinalized && (
-              <DropdownMenuItem onClick={() => setIsPayOpen(true)} className="text-blue-600 font-bold">
-                <CreditCard className="mr-2 h-3.5 w-3.5" /> Pay Now
+              <DropdownMenuItem 
+                onClick={() => setIsPayOpen(true)} 
+                className={cn(
+                  "font-bold", 
+                  proforma.isAdvancePaid ? "text-emerald-600 bg-emerald-50/50 hover:bg-emerald-100" : "text-blue-600"
+                )}
+              >
+                <CreditCard className="mr-2 h-3.5 w-3.5" /> 
+                {proforma.isAdvancePaid ? "Submit MFI Credit" : "Pay Advance"}
               </DropdownMenuItem>
             )}
             {isAccountant && (proforma.status === "UNDER_REVIEW" || proforma.status === "PAID") && (
@@ -475,59 +486,102 @@ export function ProformaActions({ proforma, banks, companyAccounts, vatSettings,
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="bg-slate-50 rounded-2xl p-4 border space-y-3">
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Sender</span>
-                <span className="text-xs font-bold text-slate-900">{proforma.paymentSenderName}</span>
+          <div className="space-y-6 py-4">
+            {/* Customer Advance Section */}
+            <div className={cn(
+              "rounded-2xl border p-4 space-y-3",
+              proforma.isAdvancePaid ? "bg-emerald-50/50 border-emerald-100" : "bg-blue-50/50 border-blue-100"
+            )}>
+              <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">1. Customer Advance</span>
+                <Badge variant={proforma.isAdvancePaid ? "default" : "outline"} className={cn("text-[8px] uppercase", proforma.isAdvancePaid ? "bg-emerald-600" : "text-blue-600 border-blue-200")}>
+                  {proforma.isAdvancePaid ? "Verified" : "Pending Review"}
+                </Badge>
               </div>
-              <div className="flex justify-between border-b border-slate-200 pb-2">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Transaction ID</span>
-                <span className="text-xs font-mono font-bold text-blue-600">{proforma.paymentTransactionId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Amount to Verify</span>
-                <span className="text-sm font-black text-slate-900 underline decoration-blue-500 decoration-2">ETB {proforma.amount?.toLocaleString()}</span>
-              </div>
+              
+              {(proforma.paymentSenderName || proforma.status === "UNDER_REVIEW" && !proforma.isAdvancePaid) ? (
+                <>
+                  <div className="grid grid-cols-2 gap-4 text-[11px]">
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Sender</span>
+                      <p className="font-bold text-slate-900">{proforma.paymentSenderName || "N/A"}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Amount</span>
+                      <p className="font-bold text-slate-900">ETB {proforma.advancePayment?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  
+                  {proforma.paymentReceiptUrl && proforma.paymentReceiptUrl !== "NO_FILE" && (
+                    <div className="border rounded-xl overflow-hidden bg-slate-900 aspect-video relative group mt-2">
+                      {proforma.paymentReceiptUrl.toLowerCase().endsWith(".pdf") ? (
+                        <iframe src={proforma.paymentReceiptUrl} className="w-full h-full border-none" title="Advance PDF" />
+                      ) : (
+                        <img src={proforma.paymentReceiptUrl} alt="Advance" className="w-full h-full object-cover" />
+                      )}
+                      <button 
+                        onClick={() => window.open(proforma.paymentReceiptUrl)}
+                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-[10px] font-bold uppercase"
+                      >
+                        View Full Receipt
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-[10px] text-slate-400 italic text-center py-2">Advance payment data not yet submitted.</p>
+              )}
             </div>
 
-            <div className="border rounded-2xl overflow-hidden bg-slate-900 aspect-[4/3] relative group">
-              {proforma.paymentReceiptUrl && proforma.paymentReceiptUrl !== "NO_FILE" ? (
-                (proforma.paymentReceiptUrl.startsWith("data:application/pdf") || 
-                 proforma.paymentReceiptUrl.toLowerCase().endsWith(".pdf")) ? (
-                  <iframe 
-                    src={proforma.paymentReceiptUrl} 
-                    className="w-full h-full border-none"
-                    title="Receipt PDF"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-slate-100 overflow-auto">
-                    <img 
-                      src={proforma.paymentReceiptUrl} 
-                      alt="Payment Receipt" 
-                      className="max-w-full h-auto shadow-2xl"
-                    />
-                  </div>
-                )
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-2">
-                  <AlertCircle className="h-8 w-8 text-slate-400" />
-                  <p className="text-[10px] font-bold uppercase">No receipt attached</p>
+            {/* Institution Credit Section - Only for Credit Method */}
+            {proforma.paymentMethod === "CREDIT" && (
+              <div className={cn(
+                "rounded-2xl border p-4 space-y-3",
+                proforma.isCreditPaid ? "bg-emerald-50/50 border-emerald-100" : (proforma.isAdvancePaid ? "bg-amber-50/50 border-amber-100" : "bg-slate-50 border-slate-100 opacity-60")
+              )}>
+                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">2. Institution Credit</span>
+                  <Badge variant={proforma.isCreditPaid ? "default" : "outline"} className={cn("text-[8px] uppercase", proforma.isCreditPaid ? "bg-emerald-600" : "text-amber-600 border-amber-200")}>
+                    {proforma.isCreditPaid ? "Verified" : (proforma.isAdvancePaid ? "Awaiting Submission" : "Locked")}
+                  </Badge>
                 </div>
-              )}
-              
-              {proforma.paymentReceiptUrl && proforma.paymentReceiptUrl !== "NO_FILE" && (
-                <button 
-                  onClick={() => {
-                    const win = window.open();
-                    win?.document.write(`<iframe src="${proforma.paymentReceiptUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
-                  }}
-                  className="absolute bottom-3 right-3 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all opacity-0 group-hover:opacity-100"
-                >
-                  Expand View
-                </button>
-              )}
-            </div>
+
+                {(proforma.institutionSenderName || (proforma.status === "UNDER_REVIEW" && proforma.isAdvancePaid)) ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-4 text-[11px]">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase">Institution</span>
+                        <p className="font-bold text-slate-900">{proforma.institutionSenderName || "N/A"}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase">Amount</span>
+                        <p className="font-bold text-slate-900">ETB {proforma.creditAmount?.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    {proforma.institutionReceiptUrl && proforma.institutionReceiptUrl !== "NO_FILE" && (
+                      <div className="border rounded-xl overflow-hidden bg-slate-900 aspect-video relative group mt-2">
+                        {proforma.institutionReceiptUrl.toLowerCase().endsWith(".pdf") ? (
+                          <iframe src={proforma.institutionReceiptUrl} className="w-full h-full border-none" title="Credit PDF" />
+                        ) : (
+                          <img src={proforma.institutionReceiptUrl} alt="Credit" className="w-full h-full object-cover" />
+                        )}
+                        <button 
+                          onClick={() => window.open(proforma.institutionReceiptUrl)}
+                          className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-[10px] font-bold uppercase"
+                        >
+                          View Full Receipt
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-[10px] text-slate-400 italic text-center py-2">
+                    {proforma.isAdvancePaid ? "Institution payment not yet submitted." : "Available after advance verification."}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {proforma.status !== "PAID" ? (

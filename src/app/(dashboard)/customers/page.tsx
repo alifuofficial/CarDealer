@@ -13,8 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Phone, Calendar, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, Phone, Calendar, User, Search } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
   Select,
@@ -27,25 +28,54 @@ import { createCustomer } from "@/lib/actions/customers";
 import { NewCustomerDialog } from "./new-customer-dialog";
 import { CustomerActions } from "./customer-actions";
 import { CustomerDataTools } from "@/components/customer-data-tools";
+import { SearchInput } from "@/components/search-input";
 
-async function getCustomers() {
-  const session = await getServerSession(authOptions);
-  if (!session) return [];
+async function getCustomers(page = 1, search = "") {
+  const limit = 10;
+  const skip = (page - 1) * limit;
 
-  return await prisma.customer.findMany({
-    include: {
-      createdBy: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search } },
+          { phone: { contains: search } },
+        ],
+      }
+    : {};
+
+  const [total, customers] = await Promise.all([
+    prisma.customer.count({ where }),
+    prisma.customer.findMany({
+      where,
+      include: {
+        createdBy: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+    }),
+  ]);
+
+  return { 
+    customers, 
+    total, 
+    totalPages: Math.ceil(total / limit),
+    currentPage: page
+  };
 }
 
-export default async function CustomersPage() {
-  const customers = await getCustomers();
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { q: search = "", page: pageStr = "1" } = await searchParams;
+  const page = parseInt(pageStr) || 1;
+  const { customers, total, totalPages } = await getCustomers(page, search);
+  
   const session = await getServerSession(authOptions);
-  const isSeller = (session?.user as any)?.role === "SELLER";
 
   return (
     <div className="space-y-6">
@@ -53,13 +83,20 @@ export default async function CustomersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Customers</h1>
           <p className="text-sm font-medium text-slate-500">
-            System-wide customer database
+            System-wide customer database ({total} total)
           </p>
         </div>
         <div className="flex items-center gap-3">
           {(session?.user as any)?.role === "ADMIN" && <CustomerDataTools customers={customers} />}
           <NewCustomerDialog />
         </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <SearchInput 
+          placeholder="Search name or phone..." 
+          defaultValue={search}
+        />
       </div>
 
       <Card className="border-none shadow-sm overflow-hidden">
@@ -122,6 +159,34 @@ export default async function CustomersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/customers?page=${page - 1}${search ? `&q=${search}` : ""}`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                page <= 1 && "pointer-events-none opacity-50"
+              )}
+            >
+              Previous
+            </Link>
+            <Link
+              href={`/customers?page=${page + 1}${search ? `&q=${search}` : ""}`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                page >= totalPages && "pointer-events-none opacity-50"
+              )}
+            >
+              Next
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

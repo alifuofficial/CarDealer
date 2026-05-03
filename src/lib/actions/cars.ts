@@ -239,3 +239,26 @@ export async function deleteCarsByModel(modelId: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function toggleCarLock(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const unit = await prisma.carUnit.findUnique({
+    where: { id },
+    select: { isLocked: true }
+  });
+
+  if (!unit) throw new Error("Car unit not found");
+
+  await prisma.carUnit.update({
+    where: { id },
+    data: { isLocked: !unit.isLocked },
+  });
+
+  revalidatePath("/cars");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
