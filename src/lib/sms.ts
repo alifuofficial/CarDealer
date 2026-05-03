@@ -34,15 +34,28 @@ export async function sendSMS(to: string, text: string) {
       }),
     });
 
-    const data = await response.json();
+    let data: any = {};
+    const textResponse = await response.text();
+    try {
+      data = JSON.parse(textResponse);
+    } catch (e) {
+      data = { raw: textResponse };
+    }
     
     // Log the SMS in our database
+    // Robust status check: some providers use "success", some "sent", or just 200 OK
+    const statusStr = (data.status || "").toLowerCase();
+    const isSuccess = 
+      statusStr === "success" || 
+      statusStr === "sent" || 
+      (response.ok && statusStr !== "error" && statusStr !== "failed");
+
     await prisma.smsLog.create({
       data: {
         to: msisdn,
         message: text,
-        status: data.status === "success" ? "success" : "error",
-        providerResponse: JSON.stringify(data),
+        status: isSuccess ? "success" : "error",
+        providerResponse: textResponse.substring(0, 500), // Store raw text safely
       },
     });
 

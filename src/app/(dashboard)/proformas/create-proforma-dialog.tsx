@@ -42,6 +42,16 @@ export function CreateProformaDialog({ customers, availableCars, banks, vatSetti
   const [customerSearch, setCustomerSearch] = useState("");
   const [carSearch, setCarSearch] = useState("");
   
+  const selectedCar = availableCars.find(c => c.id === selectedCarId);
+
+  // Auto-switch price based on payment method
+  React.useEffect(() => {
+    if (selectedCar) {
+      const price = paymentMethod === "CASH" ? selectedCar.cashPrice : selectedCar.creditPrice;
+      setAmount(price.toString());
+    }
+  }, [paymentMethod, selectedCarId]);
+
   const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(customerSearch.toLowerCase())
   );
@@ -51,7 +61,6 @@ export function CreateProformaDialog({ customers, availableCars, banks, vatSetti
     unit.chassisNumber.toLowerCase().includes(carSearch.toLowerCase())
   );
 
-  const selectedCar = availableCars.find(c => c.id === selectedCarId);
   const netPrice = parseFloat(amount || "0");
   const totalVat = vatSettings.enabled ? (netPrice * vatSettings.rate) / 100 : 0;
   const grandTotal = netPrice + totalVat;
@@ -120,8 +129,6 @@ export function CreateProformaDialog({ customers, availableCars, banks, vatSetti
                   onValueChange={(val: string | null) => {
                     const id = val || "";
                     setSelectedCarId(id);
-                    const car = availableCars.find(c => c.id === id);
-                    if (car) setAmount(car.unitPrice.toString());
                   }}
                   required
                 >
@@ -151,9 +158,15 @@ export function CreateProformaDialog({ customers, availableCars, banks, vatSetti
                           label={`${unit.model.name} (${unit.chassisNumber})`} 
                           className="font-medium py-2.5"
                         >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-xs font-bold text-slate-900">{unit.model.name}</span>
-                            <span className="text-[10px] font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded w-fit">
+                          <div className="flex flex-col gap-1 w-full">
+                            <div className="flex justify-between items-start">
+                              <span className="text-xs font-bold text-slate-900">{unit.model.name}</span>
+                              <div className="flex flex-col items-end gap-0.5">
+                                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1 rounded">CASH: ETB {unit.cashPrice.toLocaleString()}</span>
+                                <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-1 rounded">CREDIT: ETB {unit.creditPrice.toLocaleString()}</span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded w-fit">
                               {unit.chassisNumber}
                             </span>
                           </div>

@@ -13,14 +13,15 @@ export async function importCarBatch(formData: FormData) {
   }
 
   const mode = (formData.get("mode") as string) ?? "auto";
-  const unitPrice = parseFloat(formData.get("unitPrice") as string) || 0;
+  const cashPrice = parseFloat(formData.get("cashPrice") as string) || 0;
+  const creditPrice = parseFloat(formData.get("creditPrice") as string) || 0;
 
   if (mode === "auto") {
     const modelName = formData.get("modelName") as string;
     const totalUnits = parseInt(formData.get("totalUnits") as string);
 
-    if (!modelName || isNaN(totalUnits) || totalUnits <= 0 || unitPrice <= 0) {
-      throw new Error("Invalid input. Model name, units, and unit price are required.");
+    if (!modelName || isNaN(totalUnits) || totalUnits <= 0 || cashPrice <= 0) {
+      throw new Error("Invalid input. Model name, units, and cash price are required.");
     }
 
     // Create Car Model
@@ -41,7 +42,9 @@ export async function importCarBatch(formData: FormData) {
         chassisNumber,
         modelId: carModel.id,
         status: "AVAILABLE",
-        unitPrice: unitPrice,
+        unitPrice: cashPrice, // Legacy fallback
+        cashPrice,
+        creditPrice,
       });
     }
 
@@ -60,8 +63,8 @@ export async function importCarBatch(formData: FormData) {
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
-    if (!modelName || chassisList.length === 0 || unitPrice <= 0) {
-      throw new Error("Invalid input. Model name, chassis list, and unit price are required.");
+    if (!modelName || chassisList.length === 0 || cashPrice <= 0) {
+      throw new Error("Invalid input. Model name, chassis list, and cash price are required.");
     }
 
     // Find or create model
@@ -82,7 +85,9 @@ export async function importCarBatch(formData: FormData) {
       chassisNumber: chassis, 
       modelId: carModel!.id, 
       status: "AVAILABLE",
-      unitPrice: unitPrice 
+      unitPrice: cashPrice,
+      cashPrice,
+      creditPrice
     }));
     await prisma.carUnit.createMany({ data: unitsData });
 
@@ -128,7 +133,9 @@ export async function importCarBatch(formData: FormData) {
         chassisNumber: chassis, 
         modelId: carModel!.id, 
         status: "AVAILABLE",
-        unitPrice: unitPrice // Use the unitPrice from form for simplicity
+        unitPrice: cashPrice,
+        cashPrice,
+        creditPrice
       }));
       await prisma.carUnit.createMany({ data: unitsData });
     }
@@ -139,7 +146,7 @@ export async function importCarBatch(formData: FormData) {
   }
 }
 
-export async function updateCarPrice(id: string, price: number) {
+export async function updateCarPrices(id: string, cashPrice: number, creditPrice: number) {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== "ADMIN") {
     throw new Error("Unauthorized");
@@ -147,13 +154,17 @@ export async function updateCarPrice(id: string, price: number) {
 
   await prisma.carUnit.update({
     where: { id },
-    data: { unitPrice: price },
+    data: { 
+      unitPrice: cashPrice, // Legacy sync
+      cashPrice, 
+      creditPrice 
+    },
   });
 
   revalidatePath("/cars");
 }
 
-export async function updateModelPrices(modelId: string, price: number) {
+export async function updateModelPrices(modelId: string, cashPrice: number, creditPrice: number) {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== "ADMIN") {
     throw new Error("Unauthorized");
@@ -161,7 +172,11 @@ export async function updateModelPrices(modelId: string, price: number) {
 
   await prisma.carUnit.updateMany({
     where: { modelId },
-    data: { unitPrice: price },
+    data: { 
+      unitPrice: cashPrice, // Legacy sync
+      cashPrice, 
+      creditPrice 
+    },
   });
 
   revalidatePath("/cars");
@@ -175,12 +190,17 @@ export async function updateCarUnit(id: string, formData: FormData) {
 
   const chassisNumber = formData.get("chassisNumber") as string;
   const status = formData.get("status") as string;
+  const cashPrice = parseFloat(formData.get("cashPrice") as string) || 0;
+  const creditPrice = parseFloat(formData.get("creditPrice") as string) || 0;
 
   await prisma.carUnit.update({
     where: { id },
     data: {
       chassisNumber,
       status,
+      unitPrice: cashPrice,
+      cashPrice,
+      creditPrice
     },
   });
 

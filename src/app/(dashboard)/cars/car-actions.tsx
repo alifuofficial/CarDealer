@@ -59,6 +59,8 @@ export function CarActions({ car }: CarActionsProps) {
   // Edit states
   const [chassis, setChassis] = useState(car.chassisNumber);
   const [status, setStatus] = useState(car.status);
+  const [cashPrice, setCashPrice] = useState(car.cashPrice.toString());
+  const [creditPrice, setCreditPrice] = useState(car.creditPrice.toString());
 
   async function handleToggleLock() {
     setIsLoading(true);
@@ -94,6 +96,8 @@ export function CarActions({ car }: CarActionsProps) {
       const formData = new FormData();
       formData.append("chassisNumber", chassis);
       formData.append("status", status);
+      formData.append("cashPrice", cashPrice);
+      formData.append("creditPrice", creditPrice);
       
       await updateCarUnit(car.id, formData);
       toast.success("Unit updated successfully");
@@ -144,7 +148,7 @@ export function CarActions({ car }: CarActionsProps) {
       </DropdownMenu>
 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-slate-900">Edit Car Unit</DialogTitle>
             <DialogDescription className="text-sm font-medium text-slate-500">
@@ -153,27 +157,51 @@ export function CarActions({ car }: CarActionsProps) {
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4 pt-4">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Chassis Number</Label>
-                <Input 
-                  value={chassis}
-                  onChange={(e) => setChassis(e.target.value)}
-                  className="h-10 font-bold uppercase"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Chassis Number</Label>
+                  <Input 
+                    value={chassis}
+                    onChange={(e) => setChassis(e.target.value)}
+                    className="h-10 font-bold uppercase"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Status</Label>
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger className="h-10 font-medium">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AVAILABLE" label="Available">Available</SelectItem>
+                      <SelectItem value="RESERVED" label="Reserved">Reserved</SelectItem>
+                      <SelectItem value="SOLD" label="Sold">Sold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Status</Label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="h-10 font-medium">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AVAILABLE" label="Available">Available</SelectItem>
-                    <SelectItem value="RESERVED" label="Reserved">Reserved</SelectItem>
-                    <SelectItem value="SOLD" label="Sold">Sold</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Cash Price (ETB)</Label>
+                  <Input 
+                    type="number"
+                    value={cashPrice}
+                    onChange={(e) => setCashPrice(e.target.value)}
+                    className="h-10 font-bold"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Credit Price (ETB)</Label>
+                  <Input 
+                    type="number"
+                    value={creditPrice}
+                    onChange={(e) => setCreditPrice(e.target.value)}
+                    className="h-10 font-bold"
+                    required
+                  />
+                </div>
               </div>
             </div>
             <DialogFooter className="pt-4">

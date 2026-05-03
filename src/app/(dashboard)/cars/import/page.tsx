@@ -50,7 +50,7 @@ export default function ImportCarsPage() {
           <form action={importCarBatch} className="space-y-6">
             {mode !== "csv" && (
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-2">
                   <Label htmlFor="modelName">Car Model Name</Label>
                   <Input
                     id="modelName"
@@ -60,12 +60,22 @@ export default function ImportCarsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="unitPrice">Unit Price (ETB)</Label>
+                  <Label htmlFor="cashPrice">Cash Price (ETB)</Label>
                   <Input
-                    id="unitPrice"
-                    name="unitPrice"
+                    id="cashPrice"
+                    name="cashPrice"
                     type="number"
                     placeholder="e.g. 2500000"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="creditPrice">Credit Price (ETB)</Label>
+                  <Input
+                    id="creditPrice"
+                    name="creditPrice"
+                    type="number"
+                    placeholder="e.g. 2650000"
                     required
                   />
                 </div>

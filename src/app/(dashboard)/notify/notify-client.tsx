@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { sendBulkMarketingSMS } from "@/lib/actions/marketing";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ export function NotifyClient({
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -63,6 +65,7 @@ export function NotifyClient({
         toast.success(`Campaign launched to ${selectedIds.length} recipients`);
         setMessage("");
         setSelectedIds([]);
+        router.refresh();
       } catch (e) {
         toast.error("Failed to launch campaign");
       }

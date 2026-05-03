@@ -199,9 +199,23 @@ export default async function CarsPage({
                         {car.chassisNumber}
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900">ETB {car.unitPrice.toLocaleString()}</span>
-                          <EditPriceDialog carId={car.id} currentPrice={car.unitPrice} chassisNumber={car.chassisNumber} />
+                        <div className="flex flex-col gap-1.5 group">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase w-12">Cash:</span>
+                            <span className="font-bold text-slate-900 text-sm">ETB {car.cashPrice.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase w-12">Credit:</span>
+                            <span className="font-bold text-blue-600 text-sm">ETB {car.creditPrice.toLocaleString()}</span>
+                          </div>
+                          <div className="mt-1">
+                            <EditPriceDialog 
+                              carId={car.id} 
+                              currentCashPrice={car.cashPrice} 
+                              currentCreditPrice={car.creditPrice} 
+                              chassisNumber={car.chassisNumber} 
+                            />
+                          </div>
                         </div>
                       </TableCell>
 

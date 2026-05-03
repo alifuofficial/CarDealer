@@ -31,7 +31,8 @@ interface BulkPriceDialogProps {
 
 export function BulkPriceDialog({ models }: BulkPriceDialogProps) {
   const [selectedModelId, setSelectedModelId] = useState<string>("");
-  const [price, setPrice] = useState<string>("");
+  const [cashPrice, setCashPrice] = useState<string>("");
+  const [creditPrice, setCreditPrice] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -39,12 +40,13 @@ export function BulkPriceDialog({ models }: BulkPriceDialogProps) {
   const selectedModel = models.find(m => m.id === selectedModelId);
 
   const handleSave = () => {
-    if (!selectedModelId || !price || parseFloat(price) <= 0) return;
+    if (!selectedModelId || !cashPrice || parseFloat(cashPrice) <= 0) return;
     
     startTransition(async () => {
-      await updateModelPrices(selectedModelId, parseFloat(price));
+      await updateModelPrices(selectedModelId, parseFloat(cashPrice), parseFloat(creditPrice || "0"));
       setOpen(false);
-      setPrice("");
+      setCashPrice("");
+      setCreditPrice("");
       setSelectedModelId("");
       router.refresh();
     });
@@ -64,7 +66,7 @@ export function BulkPriceDialog({ models }: BulkPriceDialogProps) {
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-slate-900">Bulk Price Update</DialogTitle>
           <DialogDescription className="text-sm font-medium text-slate-500">
-            Set a unified price for all individual units of a specific car model.
+            Set unified prices for all individual units of a specific car model.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-4">
@@ -87,25 +89,39 @@ export function BulkPriceDialog({ models }: BulkPriceDialogProps) {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="bulk-price" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Set New Unit Price (ETB)</Label>
-            <div className="relative">
-              <Input
-                id="bulk-price"
-                type="number"
-                placeholder="e.g. 2500000"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="h-12 font-bold pl-12 text-lg border-slate-200"
-              />
-              <span className="absolute left-4 top-3 text-slate-400 font-bold text-sm">ETB</span>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cash-price" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Cash Price (ETB)</Label>
+              <div className="relative">
+                <Input
+                  id="cash-price"
+                  type="number"
+                  placeholder="e.g. 2500000"
+                  value={cashPrice}
+                  onChange={(e) => setCashPrice(e.target.value)}
+                  className="h-11 font-bold pl-4 border-slate-200"
+                />
+              </div>
             </div>
-            {selectedModel && (
-              <p className="text-[10px] text-blue-600 font-bold uppercase mt-2">
-                * You are updating {selectedModel.units.length} units of {selectedModel.name}
-              </p>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="credit-price" className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Credit Price (ETB)</Label>
+              <div className="relative">
+                <Input
+                  id="credit-price"
+                  type="number"
+                  placeholder="e.g. 2650000"
+                  value={creditPrice}
+                  onChange={(e) => setCreditPrice(e.target.value)}
+                  className="h-11 font-bold pl-4 border-slate-200"
+                />
+              </div>
+            </div>
           </div>
+          {selectedModel && (
+            <p className="text-[10px] text-blue-600 font-bold uppercase mt-2">
+              * You are updating {selectedModel.units.length} units of {selectedModel.name}
+            </p>
+          )}
         </div>
         <DialogFooter className="bg-slate-50 -mx-6 -mb-6 p-4 rounded-b-xl border-t">
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={isPending} className="font-bold text-xs">
@@ -113,7 +129,7 @@ export function BulkPriceDialog({ models }: BulkPriceDialogProps) {
           </Button>
           <Button 
             onClick={handleSave} 
-            disabled={isPending || !price || !selectedModelId} 
+            disabled={isPending || !cashPrice || !selectedModelId} 
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-8 h-10 shadow-lg shadow-blue-100"
           >
             {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}

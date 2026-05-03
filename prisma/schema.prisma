@@ -36,6 +36,8 @@ model CarUnit {
   chassisNumber String    @unique
   status        String    @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
   unitPrice     Float     @default(0)
+  cashPrice     Float     @default(0)
+  creditPrice   Float     @default(0)
   modelId       String
   model         CarModel  @relation(fields: [modelId], references: [id])
   proforma      Proforma?
