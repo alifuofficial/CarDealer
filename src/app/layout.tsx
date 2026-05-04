@@ -14,6 +14,10 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
+// Force dynamic metadata and layout to reflect branding changes immediately
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
   const org = await prisma.organization.findUnique({
     where: { id: "singleton" },
