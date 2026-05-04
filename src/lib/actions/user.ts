@@ -4,18 +4,45 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+const profileSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+});
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters long"),
+  confirmPassword: z.string().min(1, "Please confirm your new password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 export async function updateProfile(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Unauthorized");
 
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
+  const rawName = formData.get("name") as string;
+  const rawEmail = formData.get("email") as string;
 
-  if (!name || !email) throw new Error("Name and email are required");
+  const validated = profileSchema.safeParse({ name: rawName, email: rawEmail });
+  if (!validated.success) {
+    throw new Error(validated.error.errors[0].message);
+  }
 
+  const { name, email } = validated.data;
   const userId = (session.user as any).id;
-  const oldName = session.user?.name;
+  
+  // Check if email is already taken by another user
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existingUser && existingUser.id !== userId) {
+    throw new Error("Email already in use");
+  }
 
   await prisma.user.update({
     where: { id: userId },
@@ -52,21 +79,18 @@ export async function updatePassword(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Unauthorized");
 
-  const currentPassword = formData.get("currentPassword") as string;
-  const newPassword = formData.get("newPassword") as string;
-  const confirmPassword = formData.get("confirmPassword") as string;
+  const updateData = {
+    currentPassword: formData.get("currentPassword") as string,
+    newPassword: formData.get("newPassword") as string,
+    confirmPassword: formData.get("confirmPassword") as string,
+  };
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    throw new Error("All password fields are required");
+  const validated = passwordSchema.safeParse(updateData);
+  if (!validated.success) {
+    throw new Error(validated.error.errors[0].message);
   }
 
-  if (newPassword !== confirmPassword) {
-    throw new Error("New passwords do not match");
-  }
-
-  if (newPassword.length < 6) {
-    throw new Error("Password must be at least 6 characters long");
-  }
+  const { currentPassword, newPassword } = validated.data;
 
   const userId = (session.user as any).id;
   const user = await prisma.user.findUnique({

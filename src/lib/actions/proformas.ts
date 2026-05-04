@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getOrganizationSecure } from "@/lib/actions/organization";
 import { redirect } from "next/navigation";
 import { sendSMS, replaceSmsVariables } from "@/lib/sms";
 import { format } from "date-fns";
@@ -26,9 +27,7 @@ export async function createProforma(formData: FormData) {
   }
 
   // Fetch Organization Settings for VAT and Expiry
-  const org = await prisma.organization.findUnique({
-    where: { id: "singleton" },
-  });
+  const org = await getOrganizationSecure();
 
   // Fetch Customer and Car details for SMS
   const customer = await prisma.customer.findUnique({ where: { id: customerId } });
@@ -116,7 +115,7 @@ export async function updateProforma(id: string, formData: FormData) {
   const creditAmount = parseFloat(formData.get("creditAmount") as string) || 0;
   const status = formData.get("status") as string;
 
-  const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
+  const org = await getOrganizationSecure();
   const vatRate = org?.vatRate ?? 15.0;
   const isVatEnabled = org?.isVatEnabled ?? true;
 
@@ -277,11 +276,7 @@ export async function getProforma(id: string) {
   });
 }
 
-export async function getOrganization() {
-  return await prisma.organization.findUnique({
-    where: { id: "singleton" },
-  });
-}
+// Using the centralized getOrganization from organization.ts instead of local one
 
 export async function approvePayment(id: string) {
   const session = await getServerSession(authOptions);

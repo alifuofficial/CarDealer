@@ -3,16 +3,24 @@ import { readFile } from "fs/promises";
 import path from "path";
 import fs from "fs";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getOrganizationSecure } from "@/lib/actions/organization";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   const { path: pathSegments } = await params;
   const fileName = pathSegments[pathSegments.length - 1]; // Use the last segment as the filename
   const filePath = pathSegments.join("/");
   
-  const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
+  const org = await getOrganizationSecure();
   
   let fileBuffer: Buffer;
   const mimeTypes: Record<string, string> = {

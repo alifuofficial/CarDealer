@@ -1,4 +1,5 @@
-import { getProforma, getOrganization } from "@/lib/actions/proformas";
+import { getProforma } from "@/lib/actions/proformas";
+import { getOrganization } from "@/lib/actions/organization";
 import { getCompanyAccounts } from "@/lib/actions/accounts";
 import { ProformaView } from "../proforma-view";
 import { notFound } from "next/navigation";

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getOrganizationSecure } from "@/lib/actions/organization";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
@@ -13,7 +14,7 @@ export async function uploadFile(file: File, prefix: string): Promise<string> {
   const buffer = Buffer.from(bytes);
   const fileName = `${prefix}-${Date.now()}${path.extname(file.name)}`;
   
-  const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
+  const org = await getOrganizationSecure();
   
   if (org?.isFtpEnabled && org.ftpHost) {
     const ftp = require("basic-ftp");

@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getOrganizationSecure } from "./actions/organization";
 
 /**
  * Sends an SMS using SMSEthiopia.et API
@@ -6,7 +7,7 @@ import { prisma } from "./prisma";
  * @param text Message content (max 160 chars)
  */
 export async function sendSMS(to: string, text: string) {
-  const org = await prisma.organization.findUnique({ where: { id: "singleton" } });
+  const org = await getOrganizationSecure();
   
   if (!org?.isSmsEnabled || !org.smsApiKey) {
     console.log("SMS skipped: Not enabled or missing API key");
