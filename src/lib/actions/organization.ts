@@ -8,13 +8,14 @@ import { uploadFile } from "@/lib/storage";
 import path from "path";
 import { z } from "zod";
 
+// More lenient URL regex or just string validation to avoid strict URL constructor issues
 const organizationSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   tin: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email("Invalid email").or(z.literal("")).optional(),
-  website: z.string().url("Invalid URL").or(z.literal("")).optional(),
+  website: z.string().optional(), // Removed .url() for leniency
   siteTitle: z.string().optional(),
   calendarType: z.enum(["GREGORIAN", "ETHIOPIAN"]).optional(),
   vatRate: z.number().min(0).max(100).optional(),
@@ -39,7 +40,7 @@ const organizationSchema = z.object({
   ftpPassword: z.string().optional(),
   ftpRoot: z.string().optional(),
   ftpIsSecure: z.boolean().optional(),
-  ftpBaseUrl: z.string().url().or(z.literal("")).optional(),
+  ftpBaseUrl: z.string().optional(), // Removed .url() for leniency
 });
 
 export async function updateOrganization(formData: FormData) {
