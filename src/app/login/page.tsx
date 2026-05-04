@@ -114,7 +114,7 @@ export default function LoginPage() {
                       <div className="relative">
                         <Mail className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
                         <Input
-                          placeholder="admin@cardealer.local"
+                          placeholder="yourname@email.com"
                           className="h-11 border-slate-200 bg-slate-50 pl-10 focus-visible:ring-blue-600"
                           {...field}
                         />
@@ -174,7 +174,7 @@ export default function LoginPage() {
 
           <div className="mt-10 text-center">
             <p className="text-xs text-slate-400">
-              © {new Date().getFullYear()} {organization?.name || "CarDealer"} Management System. All rights reserved.
+              © {new Date().getFullYear()} {organization?.name || "CarDealer"}. All rights reserved.
             </p>
           </div>
         </div>
