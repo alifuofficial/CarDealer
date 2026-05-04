@@ -98,7 +98,7 @@ export async function updateOrganization(formData: FormData) {
   // Validate with Zod
   const validated = organizationSchema.safeParse(updateData);
   if (!validated.success) {
-    throw new Error(validated.error.errors[0].message);
+    throw new Error(validated.error.issues[0].message);
   }
 
   const logo = formData.get("logo") as File;

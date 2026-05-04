@@ -29,7 +29,7 @@ export async function updateProfile(formData: FormData) {
 
   const validated = profileSchema.safeParse({ name: rawName, email: rawEmail });
   if (!validated.success) {
-    throw new Error(validated.error.errors[0].message);
+    throw new Error(validated.error.issues[0].message);
   }
 
   const { name, email } = validated.data;
@@ -87,7 +87,7 @@ export async function updatePassword(formData: FormData) {
 
   const validated = passwordSchema.safeParse(updateData);
   if (!validated.success) {
-    throw new Error(validated.error.errors[0].message);
+    throw new Error(validated.error.issues[0].message);
   }
 
   const { currentPassword, newPassword } = validated.data;
