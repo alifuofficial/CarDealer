@@ -111,3 +111,26 @@ export async function deleteCustomer(id: string) {
   revalidatePath("/customers");
   return { success: true };
 }
+
+export async function getAllCustomers(search?: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { phone: { contains: search, mode: "insensitive" as const } },
+        ],
+      }
+    : {};
+
+  return prisma.customer.findMany({
+    where,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}

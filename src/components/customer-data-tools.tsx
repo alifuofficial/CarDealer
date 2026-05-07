@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { 
   Download, 
   Upload, 
@@ -25,26 +25,43 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Papa from "papaparse";
-import { createCustomer } from "@/lib/actions/customers";
+import { createCustomer, getAllCustomers } from "@/lib/actions/customers";
 import { useRouter } from "next/navigation";
 
 interface CustomerDataToolsProps {
   customers: any[];
+  search?: string;
 }
 
-export function CustomerDataTools({ customers }: CustomerDataToolsProps) {
+export function CustomerDataTools({ customers, search }: CustomerDataToolsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isImporting, setIsImporting] = React.useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const router = useRouter();
 
+  const getFullData = async () => {
+    setIsExporting(true);
+    try {
+      const allCustomers = await getAllCustomers(search);
+      return allCustomers.map(c => ({
+        Name: c.name,
+        Phone: c.phone,
+        Type: c.type,
+        Added_On: new Date(c.createdAt).toLocaleDateString()
+      }));
+    } catch (error) {
+      toast.error("Failed to fetch all customers for export");
+      return null;
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Export to CSV
-  const exportCSV = () => {
-    const data = customers.map(c => ({
-      Name: c.name,
-      Phone: c.phone,
-      Type: c.type,
-      Added_On: new Date(c.createdAt).toLocaleDateString()
-    }));
+  const exportCSV = async () => {
+    const data = await getFullData();
+    if (!data) return;
+
     const csv = Papa.unparse(data);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -57,13 +74,10 @@ export function CustomerDataTools({ customers }: CustomerDataToolsProps) {
   };
 
   // Export to Excel
-  const exportExcel = () => {
-    const data = customers.map(c => ({
-      Name: c.name,
-      Phone: c.phone,
-      Type: c.type,
-      Added_On: new Date(c.createdAt).toLocaleDateString()
-    }));
+  const exportExcel = async () => {
+    const data = await getFullData();
+    if (!data) return;
+
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Customers");
@@ -72,15 +86,18 @@ export function CustomerDataTools({ customers }: CustomerDataToolsProps) {
   };
 
   // Export to PDF
-  const exportPDF = () => {
+  const exportPDF = async () => {
+    const data = await getFullData();
+    if (!data) return;
+
     const doc = new jsPDF();
     doc.text("Customer List", 14, 15);
     
-    const tableData = customers.map(c => [
-      c.name,
-      c.phone,
-      c.type,
-      new Date(c.createdAt).toLocaleDateString()
+    const tableData = data.map(c => [
+      c.Name,
+      c.Phone,
+      c.Type,
+      c.Added_On
     ]);
 
     autoTable(doc, {
@@ -172,7 +189,7 @@ export function CustomerDataTools({ customers }: CustomerDataToolsProps) {
         size="sm" 
         className="h-9 rounded-xl border-slate-200 font-bold text-xs uppercase tracking-widest text-slate-600 hover:bg-slate-50"
         onClick={() => fileInputRef.current?.click()}
-        disabled={isImporting}
+        disabled={isImporting || isExporting}
       >
         {isImporting ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Upload className="mr-2 h-3 w-3" />}
         Import
@@ -181,8 +198,11 @@ export function CustomerDataTools({ customers }: CustomerDataToolsProps) {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button className="h-9 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-xl shadow-slate-100">
-              <Download className="mr-2 h-3 w-3" />
+            <Button 
+              disabled={isExporting}
+              className="h-9 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-xl shadow-slate-100"
+            >
+              {isExporting ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Download className="mr-2 h-3 w-3" />}
               Export
             </Button>
           }
@@ -190,15 +210,15 @@ export function CustomerDataTools({ customers }: CustomerDataToolsProps) {
         <DropdownMenuContent align="end" className="w-48 rounded-xl border-none shadow-2xl">
           <DropdownMenuGroup>
             <DropdownMenuLabel className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-3 py-2">Select Format</DropdownMenuLabel>
-            <DropdownMenuItem onClick={exportCSV} className="rounded-lg">
+            <DropdownMenuItem onClick={exportCSV} className="rounded-lg cursor-pointer">
               <FileText className="mr-2 h-4 w-4 text-blue-500" />
               CSV Spreadsheet
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportExcel} className="rounded-lg">
+            <DropdownMenuItem onClick={exportExcel} className="rounded-lg cursor-pointer">
               <TableIcon className="mr-2 h-4 w-4 text-emerald-500" />
               Excel Document
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportPDF} className="rounded-lg">
+            <DropdownMenuItem onClick={exportPDF} className="rounded-lg cursor-pointer">
               <FileJson className="mr-2 h-4 w-4 text-red-500" />
               PDF Report
             </DropdownMenuItem>

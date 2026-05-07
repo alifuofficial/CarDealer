@@ -87,7 +87,7 @@ export default async function CustomersPage({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {(session?.user as any)?.role === "ADMIN" && <CustomerDataTools customers={customers} />}
+          {(session?.user as any)?.role === "ADMIN" && <CustomerDataTools customers={customers} search={search} />}
           <NewCustomerDialog />
         </div>
       </div>
