@@ -163,7 +163,7 @@ export function SettingsClient({ organization, banks, companyAccounts, smsTempla
                     name="name"
                     defaultValue={organization?.name || ""}
                     className="w-full h-10 rounded-lg border bg-slate-50 px-4 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-slate-300"
-                    placeholder="Alif Soreti Car Dealer"
+                    placeholder="Soreti International Trading"
                     required
                   />
                 </div>

@@ -34,7 +34,7 @@ export async function resetSystemData() {
     await prisma.organization.update({
       where: { id: "singleton" },
       data: {
-        name: "Alif Soreti Car Dealer",
+        name: "Soreti International Trading",
         logoUrl: null,
         faviconUrl: null,
         address: "",
@@ -42,7 +42,7 @@ export async function resetSystemData() {
         email: "",
         website: "",
         tin: "",
-        siteTitle: "Soreti Car Dealer",
+        siteTitle: "Soreti International Trading",
         isVatEnabled: true,
         vatRate: 15.0,
         isSmsEnabled: false,

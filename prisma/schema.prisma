@@ -107,7 +107,7 @@ model Proforma {
 
 model Organization {
   id           String   @id @default("singleton") // Only one organization record
-  name         String   @default("Alif Soreti Car Dealer")
+  name         String   @default("Soreti International Trading")
   tin          String   @default("")
   address      String   @default("")
   phone        String   @default("")
@@ -117,7 +117,7 @@ model Organization {
   vatRate      Float    @default(15.0)
   isVatEnabled Boolean  @default(true)
   calendarType String   @default("GREGORIAN") // GREGORIAN, ETHIOPIAN
-  siteTitle    String   @default("Alif Soreti Car Dealer")
+  siteTitle    String   @default("Soreti International Trading")
   faviconUrl   String?
   smsApiKey    String   @default("")
   isSmsEnabled Boolean  @default(false)

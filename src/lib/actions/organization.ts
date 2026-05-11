@@ -117,7 +117,7 @@ export async function updateOrganization(formData: FormData) {
     update: updateData,
     create: {
       id: "singleton",
-      name: "Alif Soreti Car Dealer",
+      name: "Soreti International Trading",
       ...updateData,
     },
   });

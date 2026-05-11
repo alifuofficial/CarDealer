@@ -25,10 +25,14 @@ async function main() {
   // Create Initial Organization Settings
   await prisma.organization.upsert({
     where: { id: 'singleton' },
-    update: {},
+    update: {
+      name: 'Soreti International Trading',
+      siteTitle: 'Soreti International Trading',
+    },
     create: {
       id: 'singleton',
-      name: 'Alif Soreti Car Dealer',
+      name: 'Soreti International Trading',
+      siteTitle: 'Soreti International Trading',
     },
   })
   console.log('Organization settings seeded!')
@@ -81,19 +85,19 @@ async function main() {
     },
     {
       name: 'PROFORMA_FINAL_DAY',
-      content: 'URGENT: Hello [CustomerName], your proforma [ProformaNumber] expires TODAY. Contact Alif Soreti immediately if you wish to proceed.',
+      content: 'URGENT: Hello [CustomerName], your proforma [ProformaNumber] expires TODAY. Contact Soreti International immediately if you wish to proceed.',
     },
     {
       name: 'PROFORMA_PAID',
-      content: 'Payment Confirmed! Hello [CustomerName], we have received your payment for proforma [ProformaNumber]. Thank you for choosing Alif Soreti.',
+      content: 'Payment Confirmed! Hello [CustomerName], we have received your payment for proforma [ProformaNumber]. Thank you for choosing Soreti International.',
     },
     {
       name: 'MARKETING_HOLIDAY',
-      content: 'Eid Mubarak! Visit Alif Soreti for exclusive holiday discounts on all [Year] models. Limited time offer!',
+      content: 'Eid Mubarak! Visit Soreti International for exclusive holiday discounts on all [Year] models. Limited time offer!',
     },
     {
       name: 'MARKETING_NEW_STOCK',
-      content: 'New Stock Alert! We just received [CarModel] at Alif Soreti. Come for a test drive today.',
+      content: 'New Stock Alert! We just received [CarModel] at Soreti International. Come for a test drive today.',
     },
     {
       name: 'PAYMENT_SUBMITTED',

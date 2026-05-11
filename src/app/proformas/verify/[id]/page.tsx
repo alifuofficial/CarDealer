@@ -29,7 +29,7 @@ export default async function VerifyProformaPage(props: { params: Promise<{ id: 
           <h1 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">Invalid Document</h1>
           <p className="text-slate-500 font-medium mb-8">The proforma document you are trying to verify does not exist or has been removed from our system.</p>
           <div className="pt-6 border-t border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Alif Soreti Car Dealer Security System
+            Soreti International Trading Security System
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default async function VerifyProformaPage(props: { params: Promise<{ id: 
           </div>
 
           <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-8">
-            Verified by Alif Soreti Security System
+            Verified by Soreti International Security System
           </p>
         </div>
       </div>
