@@ -9,8 +9,8 @@ if [ -z "$DATABASE_URL" ]; then
   export DATABASE_URL="file:/data/sqlite.db"
 fi
 
-echo "Running database synchronization..."
-prisma db push --accept-data-loss --skip-generate || echo "WARNING: Database sync failed, attempting to start app anyway..."
+echo "Running database migrations..."
+prisma migrate deploy || echo "WARNING: Database migrations failed, attempting to start app anyway..."
 
 echo "Seeding initial data..."
 if [ -f "prisma/seed.js" ]; then

@@ -48,6 +48,7 @@ export default function ImportCarsPage() {
             </label>
           </div>
           <form action={importCarBatch} className="space-y-6">
+            <input type="hidden" name="mode" value={mode} />
             {mode !== "csv" && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 col-span-2">
