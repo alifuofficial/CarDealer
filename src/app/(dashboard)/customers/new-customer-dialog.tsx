@@ -40,11 +40,13 @@ export function NewCustomerDialog({ showTrigger = true }: { showTrigger?: boolea
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="h-9 bg-blue-600 px-4 text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition-all hover:shadow-md">
-          <User className="mr-2 h-4 w-4" /> New Customer
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button className="h-9 bg-blue-600 px-4 text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition-all hover:shadow-md">
+            <User className="mr-2 h-4 w-4" /> New Customer
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-slate-900">New Customer</DialogTitle>
