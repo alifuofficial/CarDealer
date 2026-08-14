@@ -1,3 +1,5 @@
+"use client";
+
 import { createCustomer } from "@/lib/actions/customers";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +19,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function CreateCustomerPage() {
+  const router = useRouter();
+
+  async function handleSubmit(formData: FormData) {
+    try {
+      const res = await createCustomer(formData);
+      if (res?.error) {
+        toast.error(res.error);
+      } else if (res?.success) {
+        toast.success("Customer created successfully");
+        router.push("/customers");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An unexpected error occurred");
+    }
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <div>
@@ -37,7 +57,7 @@ export default function CreateCustomerPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={createCustomer} className="space-y-6">
+          <form action={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input

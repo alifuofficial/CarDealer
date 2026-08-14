@@ -40,7 +40,7 @@ export async function createCustomer(formData: FormData) {
   });
 
   if (existing) {
-    throw new Error("A customer with this phone number already exists in the system.");
+    return { error: "A customer with this phone number already exists in the system." };
   }
 
   try {
@@ -54,15 +54,15 @@ export async function createCustomer(formData: FormData) {
     });
   } catch (error: any) {
     if (error.code === 'P2002') {
-      throw new Error("A customer with this phone number already exists.");
+      return { error: "A customer with this phone number already exists." };
     }
-    throw error;
+    return { error: error.message || "Failed to create customer" };
   }
 
   revalidatePath("/customers");
   revalidatePath("/notify");
   revalidatePath("/dashboard");
-  redirect("/customers");
+  return { success: true };
 }
 
 export async function updateCustomer(id: string, formData: FormData) {

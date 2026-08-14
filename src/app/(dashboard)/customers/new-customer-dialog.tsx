@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogOverlay } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,19 +14,37 @@ import {
 } from "@/components/ui/select";
 import { User } from "lucide-react";
 import { createCustomer } from "@/lib/actions/customers";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function NewCustomerDialog({ showTrigger = true }: { showTrigger?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(formData: FormData) {
+    try {
+      const res = await createCustomer(formData);
+      if (res?.error) {
+        toast.error(res.error);
+      } else if (res?.success) {
+        toast.success("Customer created successfully");
+        setOpen(false);
+        router.refresh(); // Ensure the current page reflects the new data
+      }
+    } catch (error: any) {
+      toast.error(error.message || "An unexpected error occurred");
+    }
+  }
+
   if (!showTrigger) return null;
 
   return (
-    <Dialog>
-      <DialogTrigger
-        render={
-          <Button className="h-9 bg-blue-600 px-4 text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition-all hover:shadow-md">
-            <User className="mr-2 h-4 w-4" /> New Customer
-          </Button>
-        }
-      />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="h-9 bg-blue-600 px-4 text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition-all hover:shadow-md">
+          <User className="mr-2 h-4 w-4" /> New Customer
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-slate-900">New Customer</DialogTitle>
@@ -34,7 +52,7 @@ export function NewCustomerDialog({ showTrigger = true }: { showTrigger?: boolea
             Add a new customer to the database. Fill in the details below.
           </DialogDescription>
         </DialogHeader>
-        <form action={createCustomer} className="space-y-4 pt-4">
+        <form action={handleSubmit} className="space-y-4 pt-4">
           <div className="grid gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-slate-500">Name</Label>
