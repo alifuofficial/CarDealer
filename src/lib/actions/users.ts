@@ -17,6 +17,8 @@ export async function createUser(formData: FormData) {
   const password = formData.get("password") as string;
   const role = formData.get("role") as string;
   const phone = formData.get("phone") as string;
+  const canCreateProforma = formData.get("canCreateProforma") !== "false";
+  const canCreateCustomer = formData.get("canCreateCustomer") !== "false";
 
   if (!name || !email || !password || !role) {
     throw new Error("Invalid input");
@@ -32,6 +34,8 @@ export async function createUser(formData: FormData) {
         password: passwordHash,
         role,
         phone: phone?.trim() || null,
+        canCreateProforma,
+        canCreateCustomer,
       },
     });
   } catch (error: any) {
@@ -45,6 +49,24 @@ export async function createUser(formData: FormData) {
   }
 
   revalidatePath("/users");
+}
+
+export async function updateUserPermissions(id: string, canCreateProforma: boolean, canCreateCustomer: boolean) {
+  const session = await getServerSession(authOptions);
+  if (!session || (session.user as any).role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data: {
+      canCreateProforma,
+      canCreateCustomer,
+    },
+  });
+
+  revalidatePath("/users");
+  return { success: true };
 }
 
 export async function updateUser(id: string, formData: FormData) {

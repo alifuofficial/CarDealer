@@ -24,7 +24,7 @@ import {
   Eye,
   Calendar
 } from "lucide-react";
-import { deleteUser, updateUser } from "@/lib/actions/users";
+import { deleteUser, updateUser, updateUserPermissions } from "@/lib/actions/users";
 import { 
   Dialog, 
   DialogContent, 
@@ -55,6 +55,7 @@ interface UserActionsProps {
 export function UserActions({ user }: UserActionsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,6 +68,9 @@ export function UserActions({ user }: UserActionsProps) {
   const [phone, setPhone] = useState(user.phone || "");
   const [role, setRole] = useState(user.role);
   const [password, setPassword] = useState("");
+
+  const [canCreateProforma, setCanCreateProforma] = useState(user.canCreateProforma ?? true);
+  const [canCreateCustomer, setCanCreateCustomer] = useState(user.canCreateCustomer ?? true);
 
   const isSelf = (session?.user as any)?.id === user.id;
 
@@ -110,6 +114,21 @@ export function UserActions({ user }: UserActionsProps) {
     }
   }
 
+  async function handlePermissionsUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await updateUserPermissions(user.id, canCreateProforma, canCreateCustomer);
+      toast.success("Permissions updated successfully");
+      setIsPermissionsOpen(false);
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update permissions");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -129,6 +148,11 @@ export function UserActions({ user }: UserActionsProps) {
             <DropdownMenuItem onClick={() => setIsEditOpen(true)} className="rounded-lg">
               <Edit className="mr-2 h-3.5 w-3.5" /> Edit Profile
             </DropdownMenuItem>
+            {user.role === "SELLER" && (
+              <DropdownMenuItem onClick={() => setIsPermissionsOpen(true)} className="rounded-lg">
+                <Shield className="mr-2 h-3.5 w-3.5 text-blue-500" /> Manage Permissions
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem 
@@ -299,6 +323,55 @@ export function UserActions({ user }: UserActionsProps) {
                 disabled={isLoading}
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Permissions Dialog */}
+      <Dialog open={isPermissionsOpen} onOpenChange={setIsPermissionsOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-slate-900">Manage Permissions</DialogTitle>
+            <DialogDescription className="text-sm font-medium text-slate-500">
+              Update permissions for {user.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePermissionsUpdate} className="space-y-4 pt-4">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`canCreateProforma-${user.id}`}
+                  checked={canCreateProforma}
+                  onChange={(e) => setCanCreateProforma(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                />
+                <Label htmlFor={`canCreateProforma-${user.id}`} className="text-sm font-normal">
+                  Can create proformas
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={`canCreateCustomer-${user.id}`}
+                  checked={canCreateCustomer}
+                  onChange={(e) => setCanCreateCustomer(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                />
+                <Label htmlFor={`canCreateCustomer-${user.id}`} className="text-sm font-normal">
+                  Can create customers
+                </Label>
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button
+                type="submit"
+                className="w-full h-11 bg-blue-600 font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-100"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Permissions"}
               </Button>
             </DialogFooter>
           </form>

@@ -14,6 +14,11 @@ export async function createProforma(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session) throw new Error("Unauthorized");
 
+  // Ensure the user has permission to create proformas
+  if ((session.user as any).role === "SELLER" && (session.user as any).canCreateProforma === false) {
+    throw new Error("You do not have permission to create proformas. Please contact an admin.");
+  }
+
   const customerId = formData.get("customerId") as string;
   const carUnitId = formData.get("carUnitId") as string;
   const baseAmount = parseFloat(formData.get("amount") as string);

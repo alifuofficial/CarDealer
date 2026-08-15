@@ -15,11 +15,13 @@ model User {
   email            String     @unique
   password         String
   phone            String?    @unique
-  role             String     // ADMIN, SELLER, ACCOUNTANT
-  customers        Customer[]
-  createdProformas Proforma[] @relation("ProformaCreator")
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  role               String     // ADMIN, SELLER, ACCOUNTANT
+  canCreateProforma  Boolean    @default(true)
+  canCreateCustomer  Boolean    @default(true)
+  customers          Customer[]
+  createdProformas   Proforma[] @relation("ProformaCreator")
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 }
 
 model CarModel {

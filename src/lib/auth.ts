@@ -46,6 +46,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          canCreateProforma: user.canCreateProforma,
+          canCreateCustomer: user.canCreateCustomer,
         };
       },
     }),
@@ -57,6 +59,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        token.canCreateProforma = (user as any).canCreateProforma;
+        token.canCreateCustomer = (user as any).canCreateCustomer;
       }
 
       if (trigger === "update" && session) {
@@ -72,6 +76,8 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         session.user.name = token.name;
         session.user.email = token.email;
+        (session.user as any).canCreateProforma = token.canCreateProforma;
+        (session.user as any).canCreateCustomer = token.canCreateCustomer;
       }
       return session;
     },

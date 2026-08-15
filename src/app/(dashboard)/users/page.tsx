@@ -97,6 +97,17 @@ export default async function UsersPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-3 pt-2 border-t mt-4">
+                <Label className="text-sm font-bold">Permissions (Sellers)</Label>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="canCreateProforma" name="canCreateProforma" value="true" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
+                  <Label htmlFor="canCreateProforma" className="text-sm font-normal">Can create proformas</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="canCreateCustomer" name="canCreateCustomer" value="true" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
+                  <Label htmlFor="canCreateCustomer" className="text-sm font-normal">Can create customers</Label>
+                </div>
+              </div>
               <div className="pt-4">
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
                   Create User

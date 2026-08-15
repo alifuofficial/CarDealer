@@ -56,7 +56,7 @@ export default async function ProformasPage(props: { searchParams: Promise<{ sta
 
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role;
-  const canCreate = role === "ADMIN" || role === "SELLER";
+  const canCreate = role === "ADMIN" || (role === "SELLER" && (session?.user as any)?.canCreateProforma !== false);
   const canManage = role === "ADMIN";
 
   const tabs = [

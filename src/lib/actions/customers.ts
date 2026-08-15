@@ -12,6 +12,11 @@ export async function createCustomer(formData: FormData) {
     throw new Error("Unauthorized");
   }
 
+  // Ensure the user has permission to create customers
+  if ((session.user as any).role === "SELLER" && (session.user as any).canCreateCustomer === false) {
+    return { error: "You do not have permission to create customers. Please contact an admin." };
+  }
+
   const rawName = formData.get("name") as string;
   const phone = formData.get("phone") as string;
   const type = formData.get("type") as string;
