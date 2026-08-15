@@ -10,7 +10,7 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 echo "Running database migrations..."
-prisma migrate deploy || echo "WARNING: Database migrations failed, attempting to start app anyway..."
+npx prisma db push --accept-data-loss || echo "WARNING: Database migrations failed, attempting to start app anyway..."
 
 echo "Seeding initial data..."
 if [ -f "prisma/seed.js" ]; then
