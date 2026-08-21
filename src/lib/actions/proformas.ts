@@ -59,9 +59,31 @@ export async function createProforma(formData: FormData) {
   expiryDate.setDate(expiryDate.getDate() + defaultExpiryDays);
 
   // Generate Proforma Number
-  const count = await prisma.proforma.count();
   const year = new Date().getFullYear();
-  const pfNumber = `PF-${year}-${(count + 1).toString().padStart(4, "0")}`;
+  
+  const lastProforma = await prisma.proforma.findFirst({
+    where: {
+      number: {
+        startsWith: `PF-${year}-`
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+
+  let nextSequence = 1;
+  if (lastProforma) {
+    const parts = lastProforma.number.split('-');
+    if (parts.length === 3) {
+      const lastSequence = parseInt(parts[2], 10);
+      if (!isNaN(lastSequence)) {
+        nextSequence = lastSequence + 1;
+      }
+    }
+  }
+
+  const pfNumber = `PF-${year}-${nextSequence.toString().padStart(4, "0")}`;
 
   const proforma = await prisma.proforma.create({
     data: {
