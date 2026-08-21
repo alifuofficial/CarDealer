@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../src/generated/client_v2'
 // Removed bcryptjs import to avoid runtime dependency errors in standalone build
 // import bcrypt from 'bcryptjs'
 

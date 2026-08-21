@@ -68,22 +68,34 @@ export async function createProforma(formData: FormData) {
       }
     },
     orderBy: {
-      createdAt: 'desc'
+      number: 'desc'
     }
   });
 
   let nextSequence = 1;
   if (lastProforma) {
     const parts = lastProforma.number.split('-');
-    if (parts.length === 3) {
-      const lastSequence = parseInt(parts[2], 10);
-      if (!isNaN(lastSequence)) {
-        nextSequence = lastSequence + 1;
-      }
+    const lastPart = parts[parts.length - 1];
+    const lastSequence = parseInt(lastPart, 10);
+    if (!isNaN(lastSequence)) {
+      nextSequence = lastSequence + 1;
     }
   }
 
-  const pfNumber = `PF-${year}-${nextSequence.toString().padStart(4, "0")}`;
+  let pfNumber = "";
+  let isUnique = false;
+  
+  while (!isUnique) {
+    pfNumber = `PF-${year}-${nextSequence.toString().padStart(4, "0")}`;
+    const existing = await prisma.proforma.findUnique({
+      where: { number: pfNumber }
+    });
+    if (!existing) {
+      isUnique = true;
+    } else {
+      nextSequence++;
+    }
+  }
 
   const proforma = await prisma.proforma.create({
     data: {
